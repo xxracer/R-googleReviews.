@@ -1,9 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const twilio = require('twilio');
+const { dangerouslyFetchPlaceReviews } = require('react-google-reviews');
 
 const app = express();
 
@@ -81,6 +83,24 @@ app.delete('/api/instructors/:id', (req, res) => {
 
   writeDB(newInstructors);
   res.status(204).send();
+});
+
+// Google Reviews API
+app.get('/api/google-reviews', async (req, res) => {
+  const placeId = process.env.REACT_APP_GOOGLE_PLACE_ID;
+  const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+
+  if (!placeId || !apiKey) {
+    return res.status(400).json({ error: 'Missing placeId or apiKey' });
+  }
+
+  try {
+    const reviews = await dangerouslyFetchPlaceReviews(placeId, apiKey);
+    res.json(reviews);
+  } catch (error) {
+    console.error('Error fetching Google reviews:', error);
+    res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
 });
 
 // Twilio Contact Form API

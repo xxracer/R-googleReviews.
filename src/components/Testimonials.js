@@ -59,3 +59,58 @@ const Testimonials = () => {
 };
 
 export default Testimonials;
+
+/*
+// --- GOOGLE REVIEWS INTEGRATION ---
+// The following code is intended to fetch and display Google Reviews.
+// It has been commented out because it is currently causing the application to crash.
+// A developer should review the implementation and the project's configuration to resolve the issue.
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { ReactGoogleReviews } from 'react-google-reviews';
+import "react-google-reviews/dist/index.css";
+import './Testimonials.css';
+
+const GoogleReviewsTestimonials = () => {
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get('/api/google-reviews');
+        setReviews(response.data);
+      } catch (error) => {
+        console.error('Error fetching Google reviews:', error);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  return (
+    <section id="testimonials-section" className="testimonials-section">
+      <h2 className="section-title">What Our Members Say</h2>
+      <div className="testimonials-container">
+        {reviews.length > 0 ? (
+          <ReactGoogleReviews
+            reviews={reviews}
+            layout="carousel"
+            nameDisplay="firstAndLastInitials"
+            logoVariant="icon"
+            maxCharacters={200}
+            dateDisplay="relative"
+            reviewVariant="card"
+            theme="light"
+            structuredData={true}
+            brandName="Reign BJJ"
+            productName="Jiu Jitsu Classes"
+          />
+        ) : (
+          <p>Loading reviews...</p>
+        )}
+      </div>
+    </section>
+  );
+};
+*/
