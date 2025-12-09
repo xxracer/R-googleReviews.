@@ -4,6 +4,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const twilio = require('twilio');
+require('dotenv').config();
 
 const app = express();
 
