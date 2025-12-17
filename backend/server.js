@@ -4,9 +4,24 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const twilio = require('twilio');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
+
+// --- Database Initialization ---
+const { createInstructorsTable } = require('./db-init');
+const db = require('./db');
+const multer = require('multer');
+const { put } = require('@vercel/blob');
+
+// Configure multer for memory storage
+const upload = multer({ storage: multer.memoryStorage() });
+
+(async () => {
+  await createInstructorsTable();
+})();
+// ----------------------------
 
 // --- Vercel Deployment Fix ---
 const IS_VERCEL = process.env.VERCEL === '1';
@@ -18,70 +33,85 @@ const DB_PATH = IS_VERCEL ? VERCEL_TMP_DB_PATH : LOCAL_DB_PATH;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Helper function to read the database
-const readDB = () => {
-  if (IS_VERCEL && !fs.existsSync(DB_PATH)) {
-    if (fs.existsSync(LOCAL_DB_PATH)) {
-      const initialData = fs.readFileSync(LOCAL_DB_PATH, 'utf8');
-      fs.writeFileSync(DB_PATH, initialData, 'utf8');
-    } else {
-      fs.writeFileSync(DB_PATH, JSON.stringify([]), 'utf8');
-    }
-  }
-  if (!fs.existsSync(DB_PATH)) {
-    return [];
-  }
-  const data = fs.readFileSync(DB_PATH, 'utf8');
-  return JSON.parse(data);
-};
-
-// Helper function to write to the database
-const writeDB = (data) => {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
-};
-
 // --- API Routes ---
 
 // Instructors API
-app.get('/api/instructors', (req, res) => {
-  const instructors = readDB();
-  res.json(instructors);
+app.get('/api/instructors', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM instructors ORDER BY id ASC');
+    // The `bio` field is an array of strings (TEXT[] in Postgres).
+    // The `id` from the file is now `original_id`.
+    // We will keep the new `id` from the database as the main identifier.
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching instructors from DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch instructors.' });
+  }
 });
 
-app.post('/api/instructors', (req, res) => {
-  const instructors = readDB();
-  const newInstructor = { id: Date.now().toString(), ...req.body };
-  instructors.push(newInstructor);
-  writeDB(instructors);
-  res.status(201).json(newInstructor);
+app.post('/api/instructors', async (req, res) => {
+  const { name, bio, image } = req.body;
+  try {
+    const { rows } = await db.query(
+      'INSERT INTO instructors (name, bio, image) VALUES ($1, $2, $3) RETURNING *',
+      [name, bio, image]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error('Error creating instructor in DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to create instructor.' });
+  }
 });
 
-app.put('/api/instructors/:id', (req, res) => {
-  let instructors = readDB();
+app.put('/api/instructors/:id', async (req, res) => {
   const { id } = req.params;
-  const instructorIndex = instructors.findIndex(i => i.id === id);
+  const { name, bio, image } = req.body;
+  try {
+    const { rows } = await db.query(
+      'UPDATE instructors SET name = $1, bio = $2, image = $3 WHERE id = $4 RETURNING *',
+      [name, bio, image, id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Instructor not found.' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Error updating instructor in DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to update instructor.' });
+  }
+});
 
-  if (instructorIndex === -1) {
-    return res.status(404).send('Instructor not found');
+app.delete('/api/instructors/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { rowCount } = await db.query('DELETE FROM instructors WHERE id = $1', [id]);
+    if (rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Instructor not found.' });
+    }
+    res.status(204).send();
+  } catch (err) {
+    console.error('Error deleting instructor from DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to delete instructor.' });
+  }
+});
+
+// Image Upload API for Instructors
+app.post('/api/instructors/upload', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No image file provided.' });
   }
 
-  const updatedInstructor = { ...instructors[instructorIndex], ...req.body };
-  instructors[instructorIndex] = updatedInstructor;
-  writeDB(instructors);
-  res.json(updatedInstructor);
-});
+  try {
+    const blob = await put(req.file.originalname, req.file.buffer, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
 
-app.delete('/api/instructors/:id', (req, res) => {
-  let instructors = readDB();
-  const { id } = req.params;
-  const newInstructors = instructors.filter(i => i.id !== id);
-
-  if (instructors.length === newInstructors.length) {
-    return res.status(404).send('Instructor not found');
+    res.status(200).json({ success: true, url: blob.url });
+  } catch (err) {
+    console.error('Error uploading image to Vercel Blob:', err);
+    res.status(500).json({ success: false, message: 'Failed to upload image.' });
   }
-
-  writeDB(newInstructors);
-  res.status(204).send();
 });
 
 // Twilio Contact Form API
@@ -127,6 +157,33 @@ if (!IS_VERCEL) {
     console.log(`Server is running for local development on http://localhost:${PORT}`);
   });
 }
+
+// Google Reviews API
+app.get('/api/google-reviews', async (req, res) => {
+  const { GOOGLE_PLACES_API_KEY, GOOGLE_PLACE_ID } = process.env;
+
+  if (!GOOGLE_PLACES_API_KEY || !GOOGLE_PLACE_ID) {
+    console.log('Google Places API credentials not found.');
+    return res.status(500).json({ success: false, message: 'API credentials not configured.' });
+  }
+
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${GOOGLE_PLACE_ID}&fields=name,rating,reviews&key=${GOOGLE_PLACES_API_KEY}`;
+
+  try {
+    const response = await axios.get(url);
+    const place = response.data.result;
+
+    if (place && place.reviews) {
+      const fiveStarReviews = place.reviews.filter(review => review.rating === 5);
+      res.json({ success: true, reviews: fiveStarReviews });
+    } else {
+      res.json({ success: true, reviews: [] });
+    }
+  } catch (error) {
+    console.error('Error fetching Google Reviews:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch reviews.' });
+  }
+});
 
 // Export the app for Vercel's serverless environment
 module.exports = app;

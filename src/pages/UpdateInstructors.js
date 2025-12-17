@@ -7,6 +7,34 @@ const UpdateInstructors = () => {
   const [instructors, setInstructors] = useState([]);
   const [formData, setFormData] = useState({ name: '', bio: '', image: '' });
   const [editingId, setEditingId] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    const uploadFormData = new FormData();
+    uploadFormData.append('image', file);
+
+    fetch('/api/instructors/upload', {
+      method: 'POST',
+      body: uploadFormData,
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setFormData({ ...formData, image: data.url });
+        } else {
+          console.error('Upload failed:', data.message);
+        }
+        setUploading(false);
+      })
+      .catch(err => {
+        console.error('Error uploading file:', err);
+        setUploading(false);
+      });
+  };
 
   // Fetch instructors on component mount
   useEffect(() => {
@@ -82,14 +110,22 @@ const UpdateInstructors = () => {
             onChange={handleInputChange}
             required
           />
-          <input
-            type="text"
-            name="image"
-            placeholder="Image URL"
-            value={formData.image}
-            onChange={handleInputChange}
-            required
-          />
+          <div className="image-upload-container">
+            <label htmlFor="image-upload">Instructor Image:</label>
+            <input
+              id="image-upload"
+              type="file"
+              name="imageFile"
+              onChange={handleFileChange}
+            />
+            {uploading && <p>Uploading...</p>}
+            {formData.image && (
+              <div className="image-preview">
+                <p>Current Image:</p>
+                <img src={formData.image} alt="Instructor Preview" style={{ maxWidth: '100px' }} />
+              </div>
+            )}
+          </div>
           <div className="form-buttons">
             <button type="submit">{editingId ? 'Update Instructor' : 'Add Instructor'}</button>
             {editingId && <button type="button" onClick={resetForm} className="cancel-btn">Cancel</button>}
