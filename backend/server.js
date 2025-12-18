@@ -3,14 +3,13 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const twilio = require('twilio');
 const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
 
 // --- Database Initialization ---
-const { createInstructorsTable } = require('./db-init');
+const { initializeDatabase } = require('./db-init');
 const db = require('./db');
 const multer = require('multer');
 const { put } = require('@vercel/blob');
@@ -19,7 +18,7 @@ const { put } = require('@vercel/blob');
 const upload = multer({ storage: multer.memoryStorage() });
 
 (async () => {
-  await createInstructorsTable();
+  await initializeDatabase();
 })();
 // ----------------------------
 
@@ -95,8 +94,8 @@ app.delete('/api/instructors/:id', async (req, res) => {
   }
 });
 
-// Image Upload API for Instructors
-app.post('/api/instructors/upload', upload.single('image'), async (req, res) => {
+// Generic Image Upload API
+app.post('/api/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image file provided.' });
   }
@@ -105,6 +104,7 @@ app.post('/api/instructors/upload', upload.single('image'), async (req, res) => 
     const blob = await put(req.file.originalname, req.file.buffer, {
       access: 'public',
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      allowOverwrite: true, // Allow overwriting the file
     });
 
     res.status(200).json({ success: true, url: blob.url });
@@ -114,41 +114,47 @@ app.post('/api/instructors/upload', upload.single('image'), async (req, res) => 
   }
 });
 
-// Twilio Contact Form API
-app.post('/api/send-message', (req, res) => {
-  const { name, email, message } = req.body;
+// --- Page Content API ---
+app.get('/api/content/:section_id', async (req, res) => {
+  const { section_id } = req.params;
+  try {
+    const { rows } = await db.query('SELECT * FROM page_content WHERE section_id = $1', [section_id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Content not found.' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Error fetching content from DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch content.' });
+  }
+});
 
-  const {
-    TWILIO_ACCOUNT_SID,
-    TWILIO_AUTH_TOKEN,
-    TWILIO_FROM_NUMBER,
-    TWILIO_TO_NUMBER,
-  } = process.env;
+app.put('/api/content/:section_id', async (req, res) => {
+  const { section_id } = req.params;
+  const { content_type, content_value } = req.body;
 
-  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !TWILIO_TO_NUMBER) {
-    console.log('Twilio credentials not found. Skipping message send. Form data:', { name, email, message });
-    // Return a success response to not break the frontend flow
-    return res.status(200).json({ success: true, message: 'Form submitted (Twilio inactive).' });
+  if (!content_type || content_value === undefined) {
+    return res.status(400).json({ success: false, message: 'content_type and content_value are required.' });
   }
 
-  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-  const body = `New Contact Form Submission:\n\nName: ${name}\nEmail: ${email}\n\nMessage: ${message}`;
-
-  client.messages
-    .create({
-      body: body,
-      from: TWILIO_FROM_NUMBER,
-      to: TWILIO_TO_NUMBER,
-    })
-    .then(message => {
-      console.log('Twilio message sent:', message.sid);
-      res.status(200).json({ success: true, message: 'Message sent successfully!' });
-    })
-    .catch(error => {
-      console.error('Twilio Error:', error);
-      res.status(500).json({ success: false, message: 'Failed to send message.' });
-    });
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO page_content (section_id, content_type, content_value)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (section_id)
+       DO UPDATE SET content_type = $2, content_value = $3
+       RETURNING *`,
+      [section_id, content_type, content_value]
+    );
+    res.status(200).json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error('Error upserting content in DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to save content.' });
+  }
 });
+
+
+// Webhook Contact Form API
 
 // For local development, we still need to listen on a port.
 if (!IS_VERCEL) {

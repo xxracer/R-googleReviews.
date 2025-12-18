@@ -1,15 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './HeroSection.css';
 
 const HeroSection = ({ videoOpacity }) => {
+  const [heroImageUrl, setHeroImageUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+
+  useEffect(() => {
+    const fetchHeroImage = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/api/content/homepage_main_image`);
+        if (response.data && response.data.content_value) {
+          setHeroImageUrl(response.data.content_value);
+        }
+      } catch (error) {
+        console.error('Error fetching homepage hero image:', error);
+        // Image not found or error, will fallback to video
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHeroImage();
+  }, [apiBaseUrl]);
+
   return (
     <section className="hero-section">
-      <div className="hero-video-wrapper" style={{ opacity: videoOpacity }}>
-        <video autoPlay loop muted playsInline className="hero-video-bg">
-          <source src="/videos/reign.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
+      {isLoading ? (
+        <div className="hero-video-wrapper"></div> // Placeholder for smooth loading
+      ) : heroImageUrl ? (
+        <div className="hero-image-wrapper">
+          <img src={heroImageUrl} alt="Jiu Jitsu Academy" className="hero-image-bg" />
+        </div>
+      ) : (
+        <div className="hero-video-wrapper" style={{ opacity: videoOpacity }}>
+          <video autoPlay loop muted playsInline className="hero-video-bg">
+            <source src="/videos/reign.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      )}
       <div className="hero-content">
         <h1 className="hero-main-title">Katys Premier Jiu Jitsu Academy</h1>
         <p className="hero-sub-text">Kids Jiu-Jitsu • Adult Gi & No-Gi • Competition & Homeschool Training</p>

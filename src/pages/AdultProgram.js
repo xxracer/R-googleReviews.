@@ -1,6 +1,7 @@
 import React from 'react';
 import './ProgramPage.css';
 import FAQ from '../components/FAQ';
+import ProgramHero from '../components/ProgramHero';
 
 const AdultProgram = () => {
   const pageFaqs = [
@@ -32,9 +33,12 @@ const AdultProgram = () => {
       <script type="application/ld+json">
         {JSON.stringify(faqSchema)}
       </script>
-      <section className="program-hero" style={{ backgroundImage: "url('https://static.wixstatic.com/media/c5947c_fae53860ebbd4e9a8644aa66c76e45e1~mv2.jpg')" }}>
-        <h1 className="program-hero-title">Adult Program</h1>
-      </section>
+
+      <ProgramHero
+        title="Adult Program"
+        sectionId="adult_program_image"
+        defaultImage="https://static.wixstatic.com/media/c5947c_fae53860ebbd4e9a8644aa66c76e45e1~mv2.jpg"
+      />
 
       <section className="program-intro">
         <p>

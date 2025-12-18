@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
@@ -21,7 +22,11 @@ import AffiliateSchools from './pages/AffiliateSchools';
 import ContactPage from './pages/ContactPage';
 import AboutPage from './pages/AboutPage';
 import BlogPage from './pages/BlogPage';
-import UpdateInstructors from './pages/UpdateInstructors';
+import UpdateInstructors from './pages/admin/UpdateInstructors';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageHomepage from './pages/admin/ManageHomepage';
+import ManagePrograms from './pages/admin/ManagePrograms';
+import ManageAbout from './pages/admin/ManageAbout';
 
 import GoogleReviewsButton from './components/GoogleReviewsButton';
 
@@ -46,7 +51,15 @@ const AppLayout = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/update-instructors" element={<UpdateInstructors />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<ManageHomepage />} />
+            <Route path="homepage" element={<ManageHomepage />} />
+            <Route path="programs" element={<ManagePrograms />} />
+            <Route path="about" element={<ManageAbout />} />
+            <Route path="instructors" element={<UpdateInstructors />} />
+          </Route>
         </Routes>
       </main>
       <Footer />

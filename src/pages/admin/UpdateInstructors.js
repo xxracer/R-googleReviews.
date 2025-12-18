@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import './UpdateInstructors.css';
 
@@ -17,7 +18,7 @@ const UpdateInstructors = () => {
     const uploadFormData = new FormData();
     uploadFormData.append('image', file);
 
-    fetch('/api/instructors/upload', {
+    fetch('/api/upload', {
       method: 'POST',
       body: uploadFormData,
     })
@@ -105,7 +106,7 @@ const UpdateInstructors = () => {
           />
           <textarea
             name="bio"
-            placeholder="Biography"
+            placeholder="Biography (HTML allowed)"
             value={formData.bio}
             onChange={handleInputChange}
             required

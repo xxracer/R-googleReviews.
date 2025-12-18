@@ -1,6 +1,7 @@
 import React from 'react';
 import './ProgramPage.css';
 import FAQ from '../components/FAQ';
+import ProgramHero from '../components/ProgramHero'; // Import the new component
 
 const KidsProgram = () => {
   const pageFaqs = [
@@ -32,9 +33,12 @@ const KidsProgram = () => {
       <script type="application/ld+json">
         {JSON.stringify(faqSchema)}
       </script>
-      <section className="program-hero" style={{ backgroundImage: "url('https://static.wixstatic.com/media/c5947c_690fa9195b12420bb76a88e15c1502b1~mv2.jpeg')" }}>
-        <h1 className="program-hero-title">Kids Program</h1>
-      </section>
+
+      <ProgramHero
+        title="Kids Program"
+        sectionId="kids_program_image"
+        defaultImage="https://static.wixstatic.com/media/c5947c_690fa9195b12420bb76a88e15c1502b1~mv2.jpeg"
+      />
 
       <section className="program-intro">
         <p>
