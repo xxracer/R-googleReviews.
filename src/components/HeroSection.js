@@ -4,24 +4,29 @@ import './HeroSection.css';
 
 const HeroSection = ({ videoOpacity }) => {
   const [heroImageUrl, setHeroImageUrl] = useState(null);
+  const [heroVideoUrl, setHeroVideoUrl] = useState('/videos/reign.mp4'); // Default video
   const [isLoading, setIsLoading] = useState(true);
   const apiBaseUrl = process.env.REACT_APP_API_URL || '';
 
   useEffect(() => {
-    const fetchHeroImage = async () => {
+    const fetchHeroContent = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/api/content/homepage_main_image`);
-        if (response.data && response.data.content_value) {
-          setHeroImageUrl(response.data.content_value);
+        const imageResponse = await axios.get(`${apiBaseUrl}/api/content/homepage_main_image`);
+        if (imageResponse.data && imageResponse.data.content_value) {
+          setHeroImageUrl(imageResponse.data.content_value);
+        }
+
+        const videoResponse = await axios.get(`${apiBaseUrl}/api/content/homepage_hero_video`);
+        if (videoResponse.data && videoResponse.data.content_value) {
+          setHeroVideoUrl(videoResponse.data.content_value);
         }
       } catch (error) {
-        console.error('Error fetching homepage hero image:', error);
-        // Image not found or error, will fallback to video
+        console.error('Error fetching homepage hero content:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchHeroImage();
+    fetchHeroContent();
   }, [apiBaseUrl]);
 
   return (
@@ -35,7 +40,7 @@ const HeroSection = ({ videoOpacity }) => {
       ) : (
         <div className="hero-video-wrapper" style={{ opacity: videoOpacity }}>
           <video autoPlay loop muted playsInline className="hero-video-bg">
-            <source src="/videos/reign.mp4" type="video/mp4" />
+            <source src={heroVideoUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>

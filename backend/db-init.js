@@ -1,5 +1,41 @@
 
 const { query } = require('./db');
+const fs = require('fs');
+const path = require('path');
+
+const migrateInstructorsData = async () => {
+  try {
+    // Check if the table is empty before migrating
+    const { rows } = await query('SELECT COUNT(*) FROM instructors');
+    if (parseInt(rows[0].count, 10) > 0) {
+      console.log('Instructors data already migrated. Skipping.');
+      return;
+    }
+
+    // Read the local JSON file only if it exists
+    const filePath = path.join(__dirname, 'instructors.json');
+    if (!fs.existsSync(filePath)) {
+      console.log('instructors.json not found. Skipping migration.');
+      return;
+    }
+    const jsonData = fs.readFileSync(filePath, 'utf8');
+    const instructors = JSON.parse(jsonData);
+
+    // Insert each instructor into the database
+    for (const instructor of instructors) {
+      const { id, name, bio, image } = instructor;
+      // Convert the array of bio strings into a single HTML string
+      const bioHtml = bio.map(paragraph => `<p>${paragraph}</p>`).join('');
+      await query(
+        'INSERT INTO instructors (name, bio, image, original_id) VALUES ($1, $2, $3, $4)',
+        [name, bioHtml, image, id]
+      );
+    }
+    console.log('Successfully migrated instructors data from JSON to database.');
+  } catch (err) {
+    console.error('Error migrating instructors data:', err);
+  }
+};
 
 const createInstructorsTable = async () => {
   const createTableQuery = `
@@ -14,6 +50,8 @@ const createInstructorsTable = async () => {
   try {
     await query(createTableQuery);
     console.log('Table "instructors" created or already exists.');
+    // After ensuring the table exists, run the migration
+    await migrateInstructorsData();
   } catch (err) {
     console.error('Error creating instructors table:', err);
   }

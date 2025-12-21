@@ -1,7 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './WelcomeSection.css';
 
 const WelcomeSection = () => {
+  const [imageUrl, setImageUrl] = useState('https://static.wixstatic.com/media/c5947c_bf5a3cd828194df2944c8bb4eaf4cae0~mv2.jpg');
+  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/api/content/welcome_section_image`);
+        if (response.data && response.data.content_value) {
+          setImageUrl(response.data.content_value);
+        }
+      } catch (error) {
+        console.error('Error fetching welcome section image:', error);
+      }
+    };
+    fetchImage();
+  }, [apiBaseUrl]);
+
   return (
     <section id="welcome-section" className="welcome-section">
       <div className="welcome-container">
@@ -24,7 +42,7 @@ const WelcomeSection = () => {
           <button className="welcome-info-button">Get more info</button>
         </div>
         <div className="welcome-image-wrapper">
-          <img src="https://static.wixstatic.com/media/c5947c_bf5a3cd828194df2944c8bb4eaf4cae0~mv2.jpg" alt="Group of mixed-age students on the mats" />
+          <img src={imageUrl} alt="Group of mixed-age students on the mats" />
         </div>
       </div>
     </section>

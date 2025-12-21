@@ -155,6 +155,28 @@ app.put('/api/content/:section_id', async (req, res) => {
 
 
 // Webhook Contact Form API
+app.post('/api/send-message', async (req, res) => {
+  const { name, email, message } = req.body;
+  const webhookUrl = process.env.MAKE_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    console.error('Webhook URL is not configured in environment variables.');
+    return res.status(500).json({ success: false, message: 'Server configuration error.' });
+  }
+
+  try {
+    await axios.post(webhookUrl, {
+      name,
+      email,
+      message,
+    });
+    console.log('Contact form data sent to webhook successfully.');
+    res.status(200).json({ success: true, message: 'Message sent successfully!' });
+  } catch (error) {
+    console.error('Error sending data to webhook:', error.response ? error.response.data : error.message);
+    res.status(500).json({ success: false, message: 'Failed to send message.' });
+  }
+});
 
 // For local development, we still need to listen on a port.
 if (!IS_VERCEL) {
