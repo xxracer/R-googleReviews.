@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './HeroSection.css';
 
 const HeroSection = ({ videoOpacity }) => {
-  const [heroImageUrl, setHeroImageUrl] = useState(null);
-  const [heroVideoUrl, setHeroVideoUrl] = useState('/videos/reign.mp4'); // Default video
+  const [heroImage, setHeroImage] = useState({ url: null, position: 'center' });
+  const [heroVideoUrl, setHeroVideoUrl] = useState('/videos/reign.mp4');
   const [isLoading, setIsLoading] = useState(true);
   const apiBaseUrl = process.env.REACT_APP_API_URL || '';
 
@@ -13,7 +14,8 @@ const HeroSection = ({ videoOpacity }) => {
       try {
         const imageResponse = await axios.get(`${apiBaseUrl}/api/content/homepage_main_image`);
         if (imageResponse.data && imageResponse.data.content_value) {
-          setHeroImageUrl(imageResponse.data.content_value);
+          const content = JSON.parse(imageResponse.data.content_value);
+          setHeroImage({ url: content.url, position: content.position || 'center' });
         }
 
         const videoResponse = await axios.get(`${apiBaseUrl}/api/content/homepage_hero_video`);
@@ -32,10 +34,15 @@ const HeroSection = ({ videoOpacity }) => {
   return (
     <section className="hero-section">
       {isLoading ? (
-        <div className="hero-video-wrapper"></div> // Placeholder for smooth loading
-      ) : heroImageUrl ? (
+        <div className="hero-video-wrapper"></div>
+      ) : heroImage.url ? (
         <div className="hero-image-wrapper">
-          <img src={heroImageUrl} alt="Jiu Jitsu Academy" className="hero-image-bg" />
+          <img
+            src={heroImage.url}
+            alt="Jiu Jitsu Academy"
+            className="hero-image-bg"
+            style={{ objectPosition: heroImage.position }}
+          />
         </div>
       ) : (
         <div className="hero-video-wrapper" style={{ opacity: videoOpacity }}>

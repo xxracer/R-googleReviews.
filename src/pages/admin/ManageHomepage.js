@@ -12,7 +12,9 @@ const ManageHomepage = () => {
       <ImageEditor
         sectionId="homepage_main_image"
         title="Homepage Main Image (Fallback)"
+        showPositionControl={true}
       />
+      <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '-10px' }}>GIFs are supported. Use the dropdown to adjust the image position.</p>
       <VideoEditor
         sectionId="homepage_hero_video"
         title="Homepage Hero Video"

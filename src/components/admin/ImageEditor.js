@@ -1,28 +1,31 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ImageEditor.css';
 
-const ImageEditor = ({ sectionId, title }) => {
+const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
+  const [objectPosition, setObjectPosition] = useState('center');
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState('');
 
   const apiBaseUrl = process.env.REACT_APP_API_URL || '';
 
-  // Fetch the current image for this section
   useEffect(() => {
     const fetchCurrentImage = async () => {
       try {
         const response = await axios.get(`${apiBaseUrl}/api/content/${sectionId}`);
         if (response.data && response.data.content_value) {
-          setCurrentImageUrl(response.data.content_value);
+          const content = JSON.parse(response.data.content_value);
+          setCurrentImageUrl(content.url);
+          if (content.position) {
+            setObjectPosition(content.position);
+          }
         }
       } catch (error) {
-        if (error.response && error.response.status === 404) {
-          console.log(`No content found for section '${sectionId}'. A new entry will be created upon save.`);
-        } else {
+        if (error.response && error.response.status !== 404) {
           console.error(`Error fetching content for ${sectionId}:`, error);
           setStatusMessage('Could not load current image.');
           setMessageType('error');
@@ -34,48 +37,51 @@ const ImageEditor = ({ sectionId, title }) => {
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
-    setStatusMessage(''); // Clear previous messages
+    setStatusMessage('');
+  };
+
+  const handlePositionChange = (event) => {
+    setObjectPosition(event.target.value);
   };
 
   const handleSave = async () => {
-    if (!selectedFile) {
-      setStatusMessage('Please select an image file first.');
-      setMessageType('error');
-      return;
-    }
-
     setIsLoading(true);
-    setStatusMessage('Uploading image...');
+    setStatusMessage('Saving...');
     setMessageType('');
 
-    const formData = new FormData();
-    formData.append('image', selectedFile);
+    let imageUrl = currentImageUrl;
 
     try {
-      // Step 1: Upload the image
-      const uploadResponse = await axios.post(`${apiBaseUrl}/api/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const newImageUrl = uploadResponse.data.url;
-      if (!newImageUrl) {
-        throw new Error('Image URL not returned from upload.');
+      if (selectedFile) {
+        setStatusMessage('Uploading image...');
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        const uploadResponse = await axios.post(`${apiBaseUrl}/api/upload`, formData);
+        imageUrl = uploadResponse.data.url;
       }
 
-      setStatusMessage('Image uploaded. Saving content...');
+      if (!imageUrl) {
+        setStatusMessage('Please select an image file first.');
+        setMessageType('error');
+        setIsLoading(false);
+        return;
+      }
 
-      // Step 2: Save the new image URL to the page_content table
+      setStatusMessage('Saving content...');
+      const contentToSave = {
+        url: imageUrl,
+        position: objectPosition,
+      };
+
       await axios.put(`${apiBaseUrl}/api/content/${sectionId}`, {
-        content_type: 'image_url',
-        content_value: newImageUrl,
+        content_type: 'image_details',
+        content_value: JSON.stringify(contentToSave),
       });
 
-      setCurrentImageUrl(newImageUrl);
+      setCurrentImageUrl(imageUrl);
       setStatusMessage('Image updated successfully!');
       setMessageType('success');
-      setSelectedFile(null); // Clear the file input
+      setSelectedFile(null);
     } catch (error) {
       console.error('Failed to update image:', error);
       setStatusMessage('An error occurred. Please try again.');
@@ -91,20 +97,25 @@ const ImageEditor = ({ sectionId, title }) => {
       {currentImageUrl && (
         <div className="image-preview">
           <p>Current Image:</p>
-          <img src={currentImageUrl} alt={title} />
+          <img src={currentImageUrl} alt={title} style={{ objectPosition: objectPosition }} />
         </div>
       )}
       <div className="upload-controls">
-        <input type="file" onChange={handleFileChange} accept="image/*" />
-        <button className="btn" onClick={handleSave} disabled={isLoading || !selectedFile}>
-          {isLoading ? 'Saving...' : 'Save New Image'}
+        <input type="file" onChange={handleFileChange} accept="image/*,image/gif" />
+        {showPositionControl && (
+          <select value={objectPosition} onChange={handlePositionChange}>
+            <option value="center">Center</option>
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </select>
+        )}
+        <button className="btn" onClick={handleSave} disabled={isLoading}>
+          {isLoading ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
-      {statusMessage && (
-        <p className={`status-message ${messageType}`}>
-          {statusMessage}
-        </p>
-      )}
+      {statusMessage && <p className={`status-message ${messageType}`}>{statusMessage}</p>}
     </div>
   );
 };
