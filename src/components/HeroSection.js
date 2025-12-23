@@ -4,7 +4,7 @@ import axios from 'axios';
 import './HeroSection.css';
 
 const HeroSection = ({ videoOpacity }) => {
-  const [heroImage, setHeroImage] = useState({ url: null, position: 'center' });
+  const [heroImage, setHeroImage] = useState({ url: null, position: 'center', coords: { x: 0, y: 0 } });
   const [heroVideoUrl, setHeroVideoUrl] = useState('/videos/reign.mp4');
   const [isLoading, setIsLoading] = useState(true);
   const apiBaseUrl = process.env.REACT_APP_API_URL || '';
@@ -15,7 +15,11 @@ const HeroSection = ({ videoOpacity }) => {
         const imageResponse = await axios.get(`${apiBaseUrl}/api/content/homepage_main_image`);
         if (imageResponse.data && imageResponse.data.content_value) {
           const content = JSON.parse(imageResponse.data.content_value);
-          setHeroImage({ url: content.url, position: content.position || 'center' });
+          setHeroImage({
+            url: content.url,
+            position: content.position || 'center',
+            coords: content.coords || { x: 0, y: 0 }
+          });
         }
 
         const videoResponse = await axios.get(`${apiBaseUrl}/api/content/homepage_hero_video`);
@@ -41,7 +45,10 @@ const HeroSection = ({ videoOpacity }) => {
             src={heroImage.url}
             alt="Jiu Jitsu Academy"
             className="hero-image-bg"
-            style={{ objectPosition: heroImage.position }}
+            style={{
+              objectPosition: heroImage.position,
+              transform: `translate(${heroImage.coords.x}px, ${heroImage.coords.y}px)`
+            }}
           />
         </div>
       ) : (

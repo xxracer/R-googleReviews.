@@ -122,6 +122,7 @@ const UpdateInstructors = () => {
               type="file"
               name="imageFile"
               onChange={handleFileChange}
+              accept="image/jpeg, image/png"
             />
             {uploading && <p>Uploading...</p>}
             {formData.image && (

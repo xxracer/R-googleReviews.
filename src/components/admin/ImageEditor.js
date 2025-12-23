@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Draggable from 'react-draggable';
 import './ImageEditor.css';
 
 const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
   const [objectPosition, setObjectPosition] = useState('center');
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -22,6 +24,9 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
           setCurrentImageUrl(content.url);
           if (content.position) {
             setObjectPosition(content.position);
+          }
+          if (content.coords) {
+            setPosition(content.coords);
           }
         }
       } catch (error) {
@@ -42,6 +47,11 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
 
   const handlePositionChange = (event) => {
     setObjectPosition(event.target.value);
+  };
+
+  const handleDrag = (e, ui) => {
+    const { x, y } = position;
+    setPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
   };
 
   const handleSave = async () => {
@@ -71,6 +81,7 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
       const contentToSave = {
         url: imageUrl,
         position: objectPosition,
+        coords: position,
       };
 
       await axios.put(`${apiBaseUrl}/api/content/${sectionId}`, {
@@ -95,9 +106,11 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
     <div className="image-editor">
       <h3>{title}</h3>
       {currentImageUrl && (
-        <div className="image-preview">
-          <p>Current Image:</p>
-          <img src={currentImageUrl} alt={title} style={{ objectPosition: objectPosition }} />
+        <div className="image-preview draggable-container">
+          <p>Current Image (Drag to reposition):</p>
+          <Draggable onDrag={handleDrag} defaultPosition={position}>
+            <img src={currentImageUrl} alt={title} style={{ objectPosition: objectPosition }} />
+          </Draggable>
         </div>
       )}
       <div className="upload-controls">

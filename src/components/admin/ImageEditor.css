@@ -19,6 +19,14 @@
     text-align: center;
 }
 
+.image-preview .react-draggable {
+    cursor: grab;
+}
+
+.image-preview .react-draggable-dragging {
+    cursor: grabbing;
+}
+
 .image-preview img {
     max-width: 100%;
     height: auto;
