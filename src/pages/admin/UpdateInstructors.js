@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import './UpdateInstructors.css';
 
 const API_URL = '/api/instructors';
@@ -51,8 +51,9 @@ const UpdateInstructors = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleBioChange = (value) => {
-    setFormData({ ...formData, bio: value });
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setFormData({ ...formData, bio: data });
   };
 
   const handleSubmit = (e) => {
@@ -109,10 +110,10 @@ const UpdateInstructors = () => {
             onChange={handleInputChange}
             required
           />
-          <ReactQuill
-            value={formData.bio}
-            onChange={handleBioChange}
-            placeholder="Biography"
+          <CKEditor
+            editor={ClassicEditor}
+            data={formData.bio}
+            onChange={handleEditorChange}
           />
           <div className="image-upload-container">
             <label htmlFor="image-upload">Instructor Image:</label>
