@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ImageEditor from '../../components/admin/ImageEditor';
 
@@ -10,31 +11,37 @@ const ManagePrograms = () => {
       <ImageEditor
         sectionId="kids_program_image"
         title="Kids Program Page Image"
+        showPositionControl={true}
       />
 
       <ImageEditor
         sectionId="homeschool_program_image"
         title="Homeschool Program Page Image"
+        showPositionControl={true}
       />
 
       <ImageEditor
         sectionId="adult_program_image"
         title="Adult Program Page Image"
+        showPositionControl={true}
       />
 
       <ImageEditor
         sectionId="fundamentals_program_image"
         title="Fundamentals Program Page Image"
+        showPositionControl={true}
       />
 
       <ImageEditor
         sectionId="competition_training_image"
         title="Competition Training Page Image"
+        showPositionControl={true}
       />
 
       <ImageEditor
         sectionId="private_lessons_image"
         title="Private Lessons Page Image"
+        showPositionControl={true}
       />
 
     </div>

@@ -1,12 +1,22 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ onLogout }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login');
+  };
+
   return (
     <div className="admin-dashboard">
       <div className="admin-sidebar">
-        <h2>Admin Panel</h2>
+        <div className="admin-sidebar-header">
+          <h2>Admin Panel</h2>
+          <button onClick={handleLogout} className="logout-button">Logout</button>
+        </div>
         <ul>
           <li>
             <NavLink to="/admin/homepage" className={({ isActive }) => isActive ? 'active' : ''}>

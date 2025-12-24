@@ -10,6 +10,7 @@ const ManageAbout = () => {
       <ImageEditor
         sectionId="about_us_image"
         title="About Us Page Image"
+        showPositionControl={true}
       />
 
     </div>
