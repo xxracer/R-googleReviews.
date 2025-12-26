@@ -2,17 +2,16 @@
 const { query } = require('./db');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const migrateInstructorsData = async () => {
   try {
-    // Check if the table is empty before migrating
     const { rows } = await query('SELECT COUNT(*) FROM instructors');
     if (parseInt(rows[0].count, 10) > 0) {
       console.log('Instructors data already migrated. Skipping.');
       return;
     }
 
-    // Read the local JSON file only if it exists
     const filePath = path.join(__dirname, 'instructors.json');
     if (!fs.existsSync(filePath)) {
       console.log('instructors.json not found. Skipping migration.');
@@ -21,10 +20,8 @@ const migrateInstructorsData = async () => {
     const jsonData = fs.readFileSync(filePath, 'utf8');
     const instructors = JSON.parse(jsonData);
 
-    // Insert each instructor into the database
     for (const instructor of instructors) {
       const { id, name, bio, image } = instructor;
-      // Convert the array of bio strings into a single HTML string
       const bioHtml = bio.map(paragraph => `<p>${paragraph}</p>`).join('');
       await query(
         'INSERT INTO instructors (name, bio, image, original_id) VALUES ($1, $2, $3, $4)',
@@ -50,7 +47,6 @@ const createInstructorsTable = async () => {
   try {
     await query(createTableQuery);
     console.log('Table "instructors" created or already exists.');
-    // After ensuring the table exists, run the migration
     await migrateInstructorsData();
   } catch (err) {
     console.error('Error creating instructors table:', err);
@@ -74,10 +70,45 @@ const createPageContentTable = async () => {
   }
 };
 
-// We'll rename the main export to a more generic name
+const createUsersTable = async () => {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        security_question TEXT,
+        security_answer_hash TEXT
+      );
+    `;
+    try {
+      await query(createTableQuery);
+      console.log('Table "users" created or already exists.');
+
+      const { rows } = await query('SELECT COUNT(*) FROM users');
+      if (parseInt(rows[0].count, 10) === 0) {
+        const username = 'moon';
+        const password = 'reingrules';
+        const securityQuestion = 'bjj';
+        const securityAnswer = 'bjj';
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        const securityAnswerHash = await bcrypt.hash(securityAnswer, 10);
+
+        await query(
+          'INSERT INTO users (username, password_hash, security_question, security_answer_hash) VALUES ($1, $2, $3, $4)',
+          [username, passwordHash, securityQuestion, securityAnswerHash]
+        );
+        console.log('Initial user "moon" migrated to database.');
+      }
+    } catch (err) {
+      console.error('Error creating users table:', err);
+    }
+  };
+
 const initializeDatabase = async () => {
   await createInstructorsTable();
   await createPageContentTable();
+  await createUsersTable();
 };
 
 module.exports = { initializeDatabase };

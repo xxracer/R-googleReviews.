@@ -62,36 +62,70 @@ const requireAuth = (req, res, next) => {
 // --- API Routes ---
 
 // Auth Routes
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-
-  if (username === adminUsername && bcrypt.compareSync(password, adminPasswordHash)) {
-    req.session.userId = username;
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-});
-
-app.post('/api/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      return res.status(500).json({ success: false, message: 'Could not log out.' });
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+      const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+      if (rows.length === 0) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
+      const user = rows[0];
+      const match = await bcrypt.compare(password, user.password_hash);
+      if (match) {
+        req.session.userId = user.id;
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      res.status(500).json({ success: false, message: 'An error occurred during login.' });
     }
-    res.clearCookie('connect.sid');
-    res.json({ success: true });
   });
-});
 
-app.get('/api/check-auth', (req, res) => {
-  if (req.session && req.session.userId) {
-    res.json({ isAuthenticated: true });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
-});
+  app.post('/api/logout', (req, res) => {
+    req.session.destroy(err => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Could not log out.' });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ success: true });
+    });
+  });
+
+  app.get('/api/check-auth', (req, res) => {
+    if (req.session && req.session.userId) {
+      res.json({ isAuthenticated: true });
+    } else {
+      res.json({ isAuthenticated: false });
+    }
+  });
+
+  app.post('/api/change-password', requireAuth, async (req, res) => {
+      const { securityAnswer, newPassword } = req.body;
+      const userId = req.session.userId;
+
+      try {
+        const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        if (rows.length === 0) {
+          return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+        const user = rows[0];
+
+        const match = await bcrypt.compare(securityAnswer, user.security_answer_hash);
+        if (!match) {
+          return res.status(401).json({ success: false, message: 'Incorrect answer to security question.' });
+        }
+
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, userId]);
+
+        res.json({ success: true, message: 'Password updated successfully.' });
+      } catch (err) {
+        console.error('Error changing password:', err);
+        res.status(500).json({ success: false, message: 'An error occurred.' });
+      }
+    });
 
 // Instructors API (Read is public, Write is protected)
 app.get('/api/instructors', async (req, res) => {

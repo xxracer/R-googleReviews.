@@ -38,6 +38,11 @@ const AdminDashboard = ({ onLogout }) => {
               Manage Instructors
             </NavLink>
           </li>
+          <li>
+            <NavLink to="/admin/security" className={({ isActive }) => isActive ? 'active' : ''}>
+              Change Password
+            </NavLink>
+          </li>
         </ul>
       </div>
       <div className="admin-content">
