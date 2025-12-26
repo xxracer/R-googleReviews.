@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import FAQ from '../components/FAQ';
 import './Instructors.css'; // Import the new CSS file
 
@@ -55,21 +57,10 @@ const Instructors = () => {
           </div>
           <div className="instructor-bio">
             <h2>{instructor.name}</h2>
-            {Array.isArray(instructor.bio) ? (
-              instructor.bio.map((line, i) => {
-                if (line.startsWith('#')) {
-                  return <h3 key={i} className="instructor-bio-heading">{line.substring(1)}</h3>;
-                } else if (line.startsWith('*')) {
-                  return <p key={i} className="instructor-bio-bullet">{`• ${line.substring(1)}`}</p>;
-                } else if (line.trim() === '') {
-                  return <br key={i} />;
-                } else {
-                  return <p key={i}>{line}</p>;
-                }
-              })
-            ) : (
-              <p>{instructor.bio}</p>
-            )}
+            <div
+              className="instructor-bio-content"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(instructor.bio) }}
+            />
           </div>
         </div>
       ))}

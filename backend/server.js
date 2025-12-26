@@ -1,112 +1,166 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
-const twilio = require('twilio');
 const axios = require('axios');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const PGStore = require('connect-pg-simple')(session);
+const { pool } = require('./db');
 require('dotenv').config();
 
 const app = express();
 
 // --- Database Initialization ---
-const { createInstructorsTable } = require('./db-init');
+const { initializeDatabase } = require('./db-init');
 const db = require('./db');
 const multer = require('multer');
 const { put } = require('@vercel/blob');
 
-// Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
 (async () => {
-  await createInstructorsTable();
+  await initializeDatabase();
 })();
-// ----------------------------
 
-// --- Vercel Deployment Fix ---
-const IS_VERCEL = process.env.VERCEL === '1';
-const LOCAL_DB_PATH = path.join(__dirname, 'instructors.json');
-const VERCEL_TMP_DB_PATH = '/tmp/instructors.json';
-const DB_PATH = IS_VERCEL ? VERCEL_TMP_DB_PATH : LOCAL_DB_PATH;
-// ----------------------------
+// --- Session Middleware ---
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is not set. Please set it in your .env file.');
+}
+app.use(session({
+  store: new PGStore({
+    pool: pool,
+    tableName: 'user_sessions'
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24
+  }
+}));
 
-app.use(cors());
+// --- CORS Configuration ---
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
+
 app.use(bodyParser.json());
+
+// --- Auth Middleware ---
+const requireAuth = (req, res, next) => {
+  if (req.session && req.session.userId) {
+    return next();
+  }
+  res.status(401).json({ success: false, message: 'Unauthorized' });
+};
 
 // --- API Routes ---
 
-// Instructors API
+// Auth Routes
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+
+  if (username === adminUsername && bcrypt.compareSync(password, adminPasswordHash)) {
+    req.session.userId = username;
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Could not log out.' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ success: true });
+  });
+});
+
+app.get('/api/check-auth', (req, res) => {
+  if (req.session && req.session.userId) {
+    res.json({ isAuthenticated: true });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
+});
+
+// Instructors API (Read is public, Write is protected)
 app.get('/api/instructors', async (req, res) => {
-  try {
-    const { rows } = await db.query('SELECT * FROM instructors ORDER BY id ASC');
-    // The `bio` field is an array of strings (TEXT[] in Postgres).
-    // The `id` from the file is now `original_id`.
-    // We will keep the new `id` from the database as the main identifier.
-    res.json(rows);
-  } catch (err) {
-    console.error('Error fetching instructors from DB:', err);
-    res.status(500).json({ success: false, message: 'Failed to fetch instructors.' });
-  }
-});
-
-app.post('/api/instructors', async (req, res) => {
-  const { name, bio, image } = req.body;
-  try {
-    const { rows } = await db.query(
-      'INSERT INTO instructors (name, bio, image) VALUES ($1, $2, $3) RETURNING *',
-      [name, bio, image]
-    );
-    res.status(201).json(rows[0]);
-  } catch (err) {
-    console.error('Error creating instructor in DB:', err);
-    res.status(500).json({ success: false, message: 'Failed to create instructor.' });
-  }
-});
-
-app.put('/api/instructors/:id', async (req, res) => {
-  const { id } = req.params;
-  const { name, bio, image } = req.body;
-  try {
-    const { rows } = await db.query(
-      'UPDATE instructors SET name = $1, bio = $2, image = $3 WHERE id = $4 RETURNING *',
-      [name, bio, image, id]
-    );
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Instructor not found.' });
+    try {
+      const { rows } = await db.query('SELECT * FROM instructors ORDER BY id ASC');
+      res.json(rows);
+    } catch (err) {
+      console.error('Error fetching instructors from DB:', err);
+      res.status(500).json({ success: false, message: 'Failed to fetch instructors.' });
     }
-    res.json(rows[0]);
-  } catch (err) {
-    console.error('Error updating instructor in DB:', err);
-    res.status(500).json({ success: false, message: 'Failed to update instructor.' });
-  }
-});
+  });
 
-app.delete('/api/instructors/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const { rowCount } = await db.query('DELETE FROM instructors WHERE id = $1', [id]);
-    if (rowCount === 0) {
-      return res.status(404).json({ success: false, message: 'Instructor not found.' });
+  app.post('/api/instructors', requireAuth, async (req, res) => {
+    const { name, bio, image } = req.body;
+    try {
+      const { rows } = await db.query(
+        'INSERT INTO instructors (name, bio, image) VALUES ($1, $2, $3) RETURNING *',
+        [name, bio, image]
+      );
+      res.status(201).json(rows[0]);
+    } catch (err) {
+      console.error('Error creating instructor in DB:', err);
+      res.status(500).json({ success: false, message: 'Failed to create instructor.' });
     }
-    res.status(204).send();
-  } catch (err) {
-    console.error('Error deleting instructor from DB:', err);
-    res.status(500).json({ success: false, message: 'Failed to delete instructor.' });
-  }
-});
+  });
 
-// Image Upload API for Instructors
-app.post('/api/instructors/upload', upload.single('image'), async (req, res) => {
+  app.put('/api/instructors/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    const { name, bio, image } = req.body;
+    try {
+      const { rows } = await db.query(
+        'UPDATE instructors SET name = $1, bio = $2, image = $3 WHERE id = $4 RETURNING *',
+        [name, bio, image, id]
+      );
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Instructor not found.' });
+      }
+      res.json(rows[0]);
+    } catch (err) {
+      console.error('Error updating instructor in DB:', err);
+      res.status(500).json({ success: false, message: 'Failed to update instructor.' });
+    }
+  });
+
+  app.delete('/api/instructors/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const { rowCount } = await db.query('DELETE FROM instructors WHERE id = $1', [id]);
+      if (rowCount === 0) {
+        return res.status(404).json({ success: false, message: 'Instructor not found.' });
+      }
+      res.status(204).send();
+    } catch (err) {
+      console.error('Error deleting instructor from DB:', err);
+      res.status(500).json({ success: false, message: 'Failed to delete instructor.' });
+    }
+  });
+
+// Generic Image Upload API
+app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image file provided.' });
   }
-
   try {
     const blob = await put(req.file.originalname, req.file.buffer, {
       access: 'public',
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      allowOverwrite: true,
     });
-
     res.status(200).json({ success: true, url: blob.url });
   } catch (err) {
     console.error('Error uploading image to Vercel Blob:', err);
@@ -114,43 +168,94 @@ app.post('/api/instructors/upload', upload.single('image'), async (req, res) => 
   }
 });
 
-// Twilio Contact Form API
-app.post('/api/send-message', (req, res) => {
-  const { name, email, message } = req.body;
+// Page Content API
+app.get('/api/content/:section_id', async (req, res) => {
+    const { section_id } = req.params;
+    try {
+      const { rows } = await db.query('SELECT * FROM page_content WHERE section_id = $1', [section_id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Content not found.' });
+      }
+      res.json(rows[0]);
+    } catch (err) {
+      console.error('Error fetching content from DB:', err);
+      res.status(500).json({ success: false, message: 'Failed to fetch content.' });
+    }
+  });
 
-  const {
-    TWILIO_ACCOUNT_SID,
-    TWILIO_AUTH_TOKEN,
-    TWILIO_FROM_NUMBER,
-    TWILIO_TO_NUMBER,
-  } = process.env;
+  app.put('/api/content/:section_id', requireAuth, async (req, res) => {
+    const { section_id } = req.params;
+    const { content_type, content_value } = req.body;
 
-  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !TWILIO_TO_NUMBER) {
-    console.log('Twilio credentials not found. Skipping message send. Form data:', { name, email, message });
-    // Return a success response to not break the frontend flow
-    return res.status(200).json({ success: true, message: 'Form submitted (Twilio inactive).' });
-  }
+    if (!content_type || content_value === undefined) {
+      return res.status(400).json({ success: false, message: 'content_type and content_value are required.' });
+    }
 
-  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-  const body = `New Contact Form Submission:\n\nName: ${name}\nEmail: ${email}\n\nMessage: ${message}`;
+    try {
+      const { rows } = await db.query(
+        `INSERT INTO page_content (section_id, content_type, content_value)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (section_id)
+         DO UPDATE SET content_type = $2, content_value = $3
+         RETURNING *`,
+        [section_id, content_type, content_value]
+      );
+      res.status(200).json({ success: true, data: rows[0] });
+    } catch (err) {
+      console.error('Error upserting content in DB:', err);
+      res.status(500).json({ success: false, message: 'Failed to save content.' });
+    }
+  });
 
-  client.messages
-    .create({
-      body: body,
-      from: TWILIO_FROM_NUMBER,
-      to: TWILIO_TO_NUMBER,
-    })
-    .then(message => {
-      console.log('Twilio message sent:', message.sid);
+// Webhook Contact Form API
+app.post('/api/send-message', async (req, res) => {
+    const { name, email, message } = req.body;
+    const webhookUrl = process.env.MAKE_WEBHOOK_URL;
+
+    if (!webhookUrl) {
+      console.error('Webhook URL is not configured in environment variables.');
+      return res.status(500).json({ success: false, message: 'Server configuration error.' });
+    }
+
+    try {
+      await axios.post(webhookUrl, { name, email, message });
+      console.log('Contact form data sent to webhook successfully.');
       res.status(200).json({ success: true, message: 'Message sent successfully!' });
-    })
-    .catch(error => {
-      console.error('Twilio Error:', error);
+    } catch (error) {
+      console.error('Error sending data to webhook:', error.response ? error.response.data : error.message);
       res.status(500).json({ success: false, message: 'Failed to send message.' });
-    });
-});
+    }
+  });
 
-// For local development, we still need to listen on a port.
+// Google Reviews API
+app.get('/api/google-reviews', async (req, res) => {
+    const { GOOGLE_PLACES_API_KEY, GOOGLE_PLACE_ID } = process.env;
+
+    if (!GOOGLE_PLACES_API_KEY || !GOOGLE_PLACE_ID) {
+      console.log('Google Places API credentials not found.');
+      return res.status(500).json({ success: false, message: 'API credentials not configured.' });
+    }
+
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${GOOGLE_PLACE_ID}&fields=name,rating,reviews&key=${GOOGLE_PLACES_API_KEY}`;
+
+    try {
+      const response = await axios.get(url);
+      const place = response.data.result;
+
+      if (place && place.reviews) {
+        const fiveStarReviews = place.reviews.filter(review => review.rating === 5);
+        res.json({ success: true, reviews: fiveStarReviews });
+      } else {
+        res.json({ success: true, reviews: [] });
+      }
+    } catch (error) {
+      console.error('Error fetching Google Reviews:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch reviews.' });
+    }
+  });
+
+
+const IS_VERCEL = process.env.VERCEL === '1';
 if (!IS_VERCEL) {
   const PORT = process.env.PORT || 3001;
   app.listen(PORT, () => {
@@ -158,32 +263,4 @@ if (!IS_VERCEL) {
   });
 }
 
-// Google Reviews API
-app.get('/api/google-reviews', async (req, res) => {
-  const { GOOGLE_PLACES_API_KEY, GOOGLE_PLACE_ID } = process.env;
-
-  if (!GOOGLE_PLACES_API_KEY || !GOOGLE_PLACE_ID) {
-    console.log('Google Places API credentials not found.');
-    return res.status(500).json({ success: false, message: 'API credentials not configured.' });
-  }
-
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${GOOGLE_PLACE_ID}&fields=name,rating,reviews&key=${GOOGLE_PLACES_API_KEY}`;
-
-  try {
-    const response = await axios.get(url);
-    const place = response.data.result;
-
-    if (place && place.reviews) {
-      const fiveStarReviews = place.reviews.filter(review => review.rating === 5);
-      res.json({ success: true, reviews: fiveStarReviews });
-    } else {
-      res.json({ success: true, reviews: [] });
-    }
-  } catch (error) {
-    console.error('Error fetching Google Reviews:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch reviews.' });
-  }
-});
-
-// Export the app for Vercel's serverless environment
 module.exports = app;

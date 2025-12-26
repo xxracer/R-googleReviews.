@@ -1,4 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import './UpdateInstructors.css';
 
 const API_URL = '/api/instructors';
@@ -17,7 +20,7 @@ const UpdateInstructors = () => {
     const uploadFormData = new FormData();
     uploadFormData.append('image', file);
 
-    fetch('/api/instructors/upload', {
+    fetch('/api/upload', {
       method: 'POST',
       body: uploadFormData,
     })
@@ -36,7 +39,6 @@ const UpdateInstructors = () => {
       });
   };
 
-  // Fetch instructors on component mount
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
@@ -47,6 +49,11 @@ const UpdateInstructors = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setFormData({ ...formData, bio: data });
   };
 
   const handleSubmit = (e) => {
@@ -103,12 +110,10 @@ const UpdateInstructors = () => {
             onChange={handleInputChange}
             required
           />
-          <textarea
-            name="bio"
-            placeholder="Biography"
-            value={formData.bio}
-            onChange={handleInputChange}
-            required
+          <CKEditor
+            editor={ClassicEditor}
+            data={formData.bio}
+            onChange={handleEditorChange}
           />
           <div className="image-upload-container">
             <label htmlFor="image-upload">Instructor Image:</label>
@@ -117,6 +122,7 @@ const UpdateInstructors = () => {
               type="file"
               name="imageFile"
               onChange={handleFileChange}
+              accept="image/jpeg, image/png"
             />
             {uploading && <p>Uploading...</p>}
             {formData.image && (

@@ -1,6 +1,7 @@
 import React from 'react';
 import './ProgramPage.css';
 import FAQ from '../components/FAQ';
+import ProgramHero from '../components/ProgramHero';
 
 const CompetitionTraining = () => {
   const pageFaqs = [
@@ -32,9 +33,12 @@ const CompetitionTraining = () => {
       <script type="application/ld+json">
         {JSON.stringify(faqSchema)}
       </script>
-      <section className="program-hero" style={{ backgroundImage: "url('https://static.wixstatic.com/media/c5947c_80a936d01653434093c7bf7f4276b689~mv2.png')" }}>
-        <h1 className="program-hero-title">Competition Training</h1>
-      </section>
+
+      <ProgramHero
+        title="Competition Training"
+        sectionId="competition_training_image"
+        defaultImage="https://static.wixstatic.com/media/c5947c_80a936d01653434093c7bf7f4276b689~mv2.png"
+      />
 
       <section className="program-intro">
         <p>
