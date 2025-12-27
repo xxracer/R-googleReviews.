@@ -2,12 +2,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import './LoginPage.css';
 
 const LoginPage = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -36,18 +39,29 @@ const LoginPage = ({ onLoginSuccess }) => {
             required
           />
         </div>
-        <div className="form-group">
+        <div className="form-group password-group">
           <label htmlFor="password">Password</label>
           <input
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <button
+            type="button"
+            className="toggle-password"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? 'Ocultar' : 'Mostrar'}
+          </button>
         </div>
         <button type="submit">Login</button>
+        <p className="forgot-password-link" onClick={() => setShowForgotPasswordModal(true)}>
+          Forgot Password?
+        </p>
       </form>
+      {showForgotPasswordModal && <ForgotPasswordModal onClose={() => setShowForgotPasswordModal(false)} />}
     </div>
   );
 };
