@@ -40,7 +40,7 @@ const ImageLibrary = ({ onSelect, onClose }) => {
           {error && <p className="error-message">{error}</p>}
           {images.map(image => (
             <div key={image.id} className="image-thumbnail" onClick={() => handleImageSelect(image.image_url)}>
-              <img src={image.image_url} alt={`Library image ${image.id}`} />
+              <img src={image.image_url} alt={`Library item ${image.id}`} />
             </div>
           ))}
         </div>
