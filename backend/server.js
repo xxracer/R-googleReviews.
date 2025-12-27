@@ -1,4 +1,5 @@
 
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,7 +9,6 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const PGStore = require('connect-pg-simple')(session);
 const { pool } = require('./db');
-require('dotenv').config();
 
 const app = express();
 
@@ -87,28 +87,28 @@ app.post('/api/login', async (req, res) => {
     const { username, securityAnswer, newPassword } = req.body;
 
     if (!username || !securityAnswer || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Faltan campos obligatorios.' });
+      return res.status(400).json({ success: false, message: 'Missing required fields.' });
     }
 
     try {
-      const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+      const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
       if (rows.length === 0) {
-        return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+        return res.status(404).json({ success: false, message: 'User not found.' });
       }
       const user = rows[0];
 
       const match = await bcrypt.compare(securityAnswer, user.security_answer_hash);
       if (!match) {
-        return res.status(401).json({ success: false, message: 'Respuesta de seguridad incorrecta.' });
+        return res.status(401).json({ success: false, message: 'Incorrect security answer.' });
       }
 
       const newPasswordHash = await bcrypt.hash(newPassword, 10);
-      await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, user.id]);
+      await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, user.id]);
 
-      res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
+      res.json({ success: true, message: 'Password updated successfully.' });
     } catch (err) {
-      console.error('Error al restablecer la contraseña:', err);
-      res.status(500).json({ success: false, message: 'Ocurrió un error.' });
+      console.error('Error resetting password:', err);
+      res.status(500).json({ success: false, message: 'An error occurred.' });
     }
   });
 

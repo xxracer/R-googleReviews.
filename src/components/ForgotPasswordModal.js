@@ -16,11 +16,11 @@ const ForgotPasswordModal = ({ onClose }) => {
     setSuccess('');
 
     if (newPassword !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
+      setError('Passwords do not match.');
       return;
     }
     if (newPassword.length < 6) {
-        setError('La contraseña debe tener al menos 6 caracteres.');
+        setError('Password must be at least 6 characters long.');
         return;
     }
 
@@ -38,7 +38,7 @@ const ForgotPasswordModal = ({ onClose }) => {
       setConfirmPassword('');
       setTimeout(onClose, 2000); // Close modal after 2 seconds
     } catch (err) {
-      setError(err.response?.data?.message || 'Ocurrió un error al restablecer la contraseña.');
+      setError(err.response?.data?.message || 'An error occurred while resetting the password.');
     }
   };
 
@@ -47,7 +47,7 @@ const ForgotPasswordModal = ({ onClose }) => {
       <div className="modal-content">
         <button className="close-button" onClick={onClose}>X</button>
         <form onSubmit={handlePasswordResetSubmit}>
-          <h2>Restablecer Contraseña</h2>
+          <h2>Reset Password</h2>
           {error && <p className="error-message">{error}</p>}
           {success && <p className="success-message">{success}</p>}
           <div className="form-group">
@@ -61,7 +61,7 @@ const ForgotPasswordModal = ({ onClose }) => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="security-answer">Pregunta de seguridad: BJJ?</label>
+            <label htmlFor="security-answer">Security Question: BJJ?</label>
             <input
               type="text"
               id="security-answer"
@@ -71,7 +71,7 @@ const ForgotPasswordModal = ({ onClose }) => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="new-password">Nueva Contraseña</label>
+            <label htmlFor="new-password">New Password</label>
             <input
               type="password"
               id="new-password"
@@ -81,7 +81,7 @@ const ForgotPasswordModal = ({ onClose }) => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="confirm-password">Confirmar Contraseña</label>
+            <label htmlFor="confirm-password">Confirm Password</label>
             <input
               type="password"
               id="confirm-password"
@@ -90,7 +90,7 @@ const ForgotPasswordModal = ({ onClose }) => {
               required
             />
           </div>
-          <button type="submit">Restablecer Contraseña</button>
+          <button type="submit">Reset Password</button>
         </form>
       </div>
     </div>

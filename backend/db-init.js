@@ -84,31 +84,55 @@ const createUsersTable = async () => {
       await query(createTableQuery);
       console.log('Table "users" created or already exists.');
 
-      const { rows } = await query('SELECT COUNT(*) FROM users');
-      if (parseInt(rows[0].count, 10) === 0) {
-        const username = 'moon';
-        const password = 'reingrules';
-        const securityQuestion = 'bjj';
-        const securityAnswer = 'bjj';
+      // Upsert the admin user to ensure it's always present and configured correctly
+      const username = 'moon';
+      const password = 'reingrules';
+      const securityQuestion = 'bjj';
+      const securityAnswer = 'bjj';
 
-        const passwordHash = await bcrypt.hash(password, 10);
-        const securityAnswerHash = await bcrypt.hash(securityAnswer, 10);
+      const passwordHash = await bcrypt.hash(password, 10);
+      const securityAnswerHash = await bcrypt.hash(securityAnswer, 10);
 
-        await query(
-          'INSERT INTO users (username, password_hash, security_question, security_answer_hash) VALUES ($1, $2, $3, $4)',
-          [username, passwordHash, securityQuestion, securityAnswerHash]
-        );
-        console.log('Initial user "moon" migrated to database.');
-      }
+      const upsertQuery = `
+        INSERT INTO users (username, password_hash, security_question, security_answer_hash)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (username)
+        DO UPDATE SET
+          password_hash = EXCLUDED.password_hash,
+          security_question = EXCLUDED.security_question,
+          security_answer_hash = EXCLUDED.security_answer_hash;
+      `;
+
+      await query(upsertQuery, [username, passwordHash, securityQuestion, securityAnswerHash]);
+      console.log('Admin user "moon" is present and configured.');
     } catch (err) {
-      console.error('Error creating users table:', err);
+      console.error('Error creating or upserting users table:', err);
     }
   };
+
+const createUserSessionsTable = async () => {
+  const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      "sid" varchar NOT NULL PRIMARY KEY,
+      "sess" json NOT NULL,
+      "expire" timestamp(6) NOT NULL
+    );
+  `;
+  const createIndexQuery = `CREATE INDEX IF NOT EXISTS "IDX_user_sessions_expire" ON "user_sessions" ("expire");`;
+  try {
+    await query(createTableQuery);
+    await query(createIndexQuery);
+    console.log('Table "user_sessions" created or already exists.');
+  } catch (err) {
+    console.error('Error creating user_sessions table:', err);
+  }
+};
 
 const initializeDatabase = async () => {
   await createInstructorsTable();
   await createPageContentTable();
   await createUsersTable();
+  await createUserSessionsTable();
 };
 
 module.exports = { initializeDatabase };

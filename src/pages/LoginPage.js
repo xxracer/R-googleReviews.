@@ -53,7 +53,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             className="toggle-password"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? 'Ocultar' : 'Mostrar'}
+            {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
         <button type="submit">Login</button>
