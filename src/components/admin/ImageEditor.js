@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Draggable from 'react-draggable';
+import ImageLibrary from './ImageLibrary'; // Import the new component
 import './ImageEditor.css';
 
 const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false); // State for modal
   const [objectPosition, setObjectPosition] = useState('center');
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [selectedFile, setSelectedFile] = useState(null);
@@ -102,19 +104,35 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
     }
   };
 
+  const handleSelectFromLibrary = (imageUrl) => {
+    setCurrentImageUrl(imageUrl);
+    setSelectedFile(null); // Clear any selected file
+    setStatusMessage('Image selected from library. Click "Save Changes" to apply.');
+    setMessageType('info');
+  };
+
   return (
     <div className="image-editor">
+      {isLibraryOpen && (
+        <ImageLibrary
+          onSelect={handleSelectFromLibrary}
+          onClose={() => setIsLibraryOpen(false)}
+        />
+      )}
       <h3>{title}</h3>
-      {currentImageUrl && (
-        <div className="image-preview draggable-container">
-          <p>Current Image (Drag to reposition):</p>
+      <div className="image-preview draggable-container">
+        <p>Current Image (Drag to reposition):</p>
+        {currentImageUrl ? (
           <Draggable onDrag={handleDrag} defaultPosition={position}>
             <img src={currentImageUrl} alt={title} style={{ objectPosition: objectPosition }} />
           </Draggable>
-        </div>
-      )}
+        ) : (
+          <div className="no-image-placeholder">No Image Selected</div>
+        )}
+      </div>
       <div className="upload-controls">
         <input type="file" onChange={handleFileChange} accept="image/*,image/gif" />
+        <button className="btn" onClick={() => setIsLibraryOpen(true)}>Choose from Library</button>
         {showPositionControl && (
           <select value={objectPosition} onChange={handlePositionChange}>
             <option value="center">Center</option>

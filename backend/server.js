@@ -1,4 +1,5 @@
 
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,7 +9,6 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const PGStore = require('connect-pg-simple')(session);
 const { pool } = require('./db');
-require('dotenv').config();
 
 const app = express();
 
@@ -184,6 +184,17 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
+// Image Library API
+app.get('/api/images', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM image_library ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching images from DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch images.' });
+  }
+});
+
 // Generic Image Upload API
 app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) {
@@ -195,6 +206,15 @@ app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) =>
       token: process.env.BLOB_READ_WRITE_TOKEN,
       allowOverwrite: true,
     });
+
+    // Save the image URL to the library
+    try {
+      await db.query('INSERT INTO image_library (image_url) VALUES ($1) ON CONFLICT (image_url) DO NOTHING', [blob.url]);
+    } catch (dbErr) {
+      console.error('Error saving image to library:', dbErr);
+      // Non-critical error, so we don't send a failure response to the client
+    }
+
     res.status(200).json({ success: true, url: blob.url });
   } catch (err) {
     console.error('Error uploading image to Vercel Blob:', err);
