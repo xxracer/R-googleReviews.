@@ -29,6 +29,7 @@ import ManageHomepage from './pages/admin/ManageHomepage';
 import ManagePrograms from './pages/admin/ManagePrograms';
 import ManageAbout from './pages/admin/ManageAbout';
 import UpdateInstructors from './pages/admin/UpdateInstructors';
+import ChangePasswordPage from './pages/admin/ChangePasswordPage';
 import PrivateRoute from './components/PrivateRoute';
 
 import GoogleReviewsButton from './components/GoogleReviewsButton';
@@ -97,6 +98,7 @@ const AppLayout = () => {
               <Route path="programs" element={<ManagePrograms />} />
               <Route path="about" element={<ManageAbout />} />
               <Route path="instructors" element={<UpdateInstructors />} />
+              <Route path="security" element={<ChangePasswordPage />} />
             </Route>
           </Route>
         </Routes>
