@@ -70,9 +70,69 @@ const createPageContentTable = async () => {
   }
 };
 
+const createUsersTable = async () => {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        security_question TEXT,
+        security_answer_hash TEXT
+      );
+    `;
+    try {
+      await query(createTableQuery);
+      console.log('Table "users" created or already exists.');
+
+      const { rows } = await query('SELECT COUNT(*) FROM users');
+      if (parseInt(rows[0].count, 10) === 0) {
+        const username = 'moon';
+        const password = 'reingrules';
+        const securityQuestion = 'bjj';
+        const securityAnswer = 'bjj';
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        const securityAnswerHash = await bcrypt.hash(securityAnswer, 10);
+
+        await query(
+          'INSERT INTO users (username, password_hash, security_question, security_answer_hash) VALUES ($1, $2, $3, $4)',
+          [username, passwordHash, securityQuestion, securityAnswerHash]
+        );
+        console.log('Initial user "moon" migrated to database.');
+      }
+    } catch (err) {
+      console.error('Error creating users table:', err);
+    }
+  };
+
+const createImageLibraryTable = async () => {
+  const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS image_library (
+      id SERIAL PRIMARY KEY,
+      image_url TEXT NOT NULL UNIQUE
+    );
+  `;
+  try {
+    await query(createTableQuery);
+    console.log('Table "image_library" created or already exists.');
+
+    // Seed the library with one initial image if it's empty
+    const { rows } = await query('SELECT COUNT(*) FROM image_library');
+    if (parseInt(rows[0].count, 10) === 0) {
+      const sampleImageUrl = 'https://i.imgur.com/8nLFCVP.png'; // An existing instructor image
+      await query('INSERT INTO image_library (image_url) VALUES ($1)', [sampleImageUrl]);
+      console.log('Image library seeded with initial image.');
+    }
+  } catch (err) {
+    console.error('Error creating or seeding image_library table:', err);
+  }
+};
+
 const initializeDatabase = async () => {
   await createInstructorsTable();
   await createPageContentTable();
+  await createUsersTable();
+  await createImageLibraryTable();
 };
 
 module.exports = { initializeDatabase };

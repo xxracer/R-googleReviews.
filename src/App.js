@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import axios from 'axios';
 import './App.css';
 
 // Import core layout components
@@ -22,7 +23,18 @@ import AffiliateSchools from './pages/AffiliateSchools';
 import ContactPage from './pages/ContactPage';
 import AboutPage from './pages/AboutPage';
 import BlogPage from './pages/BlogPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageHomepage from './pages/admin/ManageHomepage';
+import ManagePrograms from './pages/admin/ManagePrograms';
+import ManageAbout from './pages/admin/ManageAbout';
+import UpdateInstructors from './pages/admin/UpdateInstructors';
+import ChangePasswordPage from './pages/admin/ChangePasswordPage';
+import PrivateRoute from './components/PrivateRoute';
+
 import GoogleReviewsButton from './components/GoogleReviewsButton';
+
+// Configure axios to send credentials
+axios.defaults.withCredentials = true;
 
 const AppLayout = () => {
   return (
@@ -44,6 +56,25 @@ const AppLayout = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
+
+          {/* Protected Admin Routes - Now publicly accessible */}
+          <Route
+            path="/admin/*"
+            element={
+              <PrivateRoute>
+                <Routes>
+                  <Route path="/" element={<AdminDashboard />}>
+                    <Route index element={<ManageHomepage />} />
+                    <Route path="homepage" element={<ManageHomepage />} />
+                    <Route path="programs" element={<ManagePrograms />} />
+                    <Route path="about" element={<ManageAbout />} />
+                    <Route path="instructors" element={<UpdateInstructors />} />
+                    <Route path="security" element={<ChangePasswordPage />} />
+                  </Route>
+                </Routes>
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
       <Footer />

@@ -1,35 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import './Testimonials.css';
 
+const placeholderReviews = [
+  {
+    id: 1,
+    quote: "The best Jiu Jitsu school in Katy! The instructors are world-class and the community is incredibly supportive. My kids have learned so much more than just self-defense.",
+    author: "— Maria S., Parent",
+  },
+  {
+    id: 2,
+    quote: "I was a complete beginner and felt welcomed from day one. The Fundamentals program is perfect for building a solid foundation. Highly recommend Reign BJJ.",
+    author: "— John D., Student",
+  },
+  {
+    id: 3,
+    quote: "Top-tier training for competitors. The attention to detail and the level of the competition team is unmatched in the Houston area. This is where you come to get better.",
+    author: "— Alex P., Competitor",
+  },
+  {
+    id: 4,
+    quote: "A fantastic place for the whole family. We all train here and it's been an amazing bonding experience. Clean facility and great people.",
+    author: "— The Williams Family",
+  },
+];
+
 const Testimonials = () => {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/api/google-reviews');
-        if (response.data.success && response.data.reviews.length > 0) {
-          setReviews(response.data.reviews);
-        } else {
-          setError('No reviews found.');
-        }
-      } catch (err) {
-        setError('Failed to fetch reviews.');
-        console.error('Error fetching Google Reviews:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReviews();
-  }, []);
-
   const settings = {
     dots: true,
     infinite: true,
@@ -41,24 +39,16 @@ const Testimonials = () => {
     pauseOnHover: true,
   };
 
-  if (loading) {
-    return <section id="testimonials-section" className="testimonials-section"><p>Loading reviews...</p></section>;
-  }
-
-  if (error) {
-    return <section id="testimonials-section" className="testimonials-section"><p>{error}</p></section>;
-  }
-
   return (
     <section id="testimonials-section" className="testimonials-section">
       <h2 className="section-title">What Our Members Say</h2>
       <div className="testimonials-container">
         <Slider {...settings}>
-          {reviews.map((review, index) => (
-            <div key={index}>
+          {placeholderReviews.map(review => (
+            <div key={review.id}>
               <div className="testimonial-card">
-                <p className="testimonial-quote">“{review.text}”</p>
-                <p className="testimonial-author">— {review.author_name}</p>
+                <p className="testimonial-quote">“{review.quote}”</p>
+                <p className="testimonial-author">{review.author}</p>
               </div>
             </div>
           ))}
