@@ -5,9 +5,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const axios = require('axios');
-const bcrypt = require('bcrypt');
-const session = require('express-session');
-const PGStore = require('connect-pg-simple')(session);
 const { pool } = require('./db');
 
 const app = express();
@@ -24,25 +21,6 @@ const upload = multer({ storage: multer.memoryStorage() });
   await initializeDatabase();
 })();
 
-// --- Session Middleware ---
-if (!process.env.SESSION_SECRET) {
-  throw new Error('SESSION_SECRET is not set. Please set it in your .env file.');
-}
-app.use(session({
-  store: new PGStore({
-    pool: pool,
-    tableName: 'user_sessions'
-  }),
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24
-  }
-}));
-
 // --- CORS Configuration ---
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -51,112 +29,9 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// --- Auth Middleware ---
-const requireAuth = (req, res, next) => {
-  if (req.session && req.session.userId) {
-    return next();
-  }
-  res.status(401).json({ success: false, message: 'Unauthorized' });
-};
-
 // --- API Routes ---
 
-// Auth Routes
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-      const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-      if (rows.length === 0) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-      const user = rows[0];
-      const match = await bcrypt.compare(password, user.password_hash);
-      if (match) {
-        req.session.userId = user.id;
-        res.json({ success: true });
-      } else {
-        res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      res.status(500).json({ success: false, message: 'An error occurred during login.' });
-    }
-  });
-
-  app.post('/api/reset-password', async (req, res) => {
-    const { username, securityAnswer, newPassword } = req.body;
-
-    if (!username || !securityAnswer || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Missing required fields.' });
-    }
-
-    try {
-      const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-      if (rows.length === 0) {
-        return res.status(404).json({ success: false, message: 'User not found.' });
-      }
-      const user = rows[0];
-
-      const match = await bcrypt.compare(securityAnswer, user.security_answer_hash);
-      if (!match) {
-        return res.status(401).json({ success: false, message: 'Incorrect security answer.' });
-      }
-
-      const newPasswordHash = await bcrypt.hash(newPassword, 10);
-      await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, user.id]);
-
-      res.json({ success: true, message: 'Password updated successfully.' });
-    } catch (err) {
-      console.error('Error resetting password:', err);
-      res.status(500).json({ success: false, message: 'An error occurred.' });
-    }
-  });
-
-  app.post('/api/logout', (req, res) => {
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).json({ success: false, message: 'Could not log out.' });
-      }
-      res.clearCookie('connect.sid');
-      res.json({ success: true });
-    });
-  });
-
-  app.get('/api/check-auth', (req, res) => {
-    if (req.session && req.session.userId) {
-      res.json({ isAuthenticated: true });
-    } else {
-      res.json({ isAuthenticated: false });
-    }
-  });
-
-  app.post('/api/change-password', requireAuth, async (req, res) => {
-      const { securityAnswer, newPassword } = req.body;
-      const userId = req.session.userId;
-
-      try {
-        const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-        if (rows.length === 0) {
-          return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-        const user = rows[0];
-
-        const match = await bcrypt.compare(securityAnswer, user.security_answer_hash);
-        if (!match) {
-          return res.status(401).json({ success: false, message: 'Incorrect answer to security question.' });
-        }
-
-        const newPasswordHash = await bcrypt.hash(newPassword, 10);
-        await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, userId]);
-
-        res.json({ success: true, message: 'Password updated successfully.' });
-      } catch (err) {
-        console.error('Error changing password:', err);
-        res.status(500).json({ success: false, message: 'An error occurred.' });
-      }
-    });
-
-// Instructors API (Read is public, Write is protected)
+// Instructors API
 app.get('/api/instructors', async (req, res) => {
     try {
       const { rows } = await db.query('SELECT * FROM instructors ORDER BY id ASC');
@@ -167,7 +42,7 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-  app.post('/api/instructors', requireAuth, async (req, res) => {
+  app.post('/api/instructors', async (req, res) => {
     const { name, bio, image } = req.body;
     try {
       const { rows } = await db.query(
@@ -181,7 +56,7 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-  app.put('/api/instructors/:id', requireAuth, async (req, res) => {
+  app.put('/api/instructors/:id', async (req, res) => {
     const { id } = req.params;
     const { name, bio, image } = req.body;
     try {
@@ -199,7 +74,7 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-  app.delete('/api/instructors/:id', requireAuth, async (req, res) => {
+  app.delete('/api/instructors/:id', async (req, res) => {
     const { id } = req.params;
     try {
       const { rowCount } = await db.query('DELETE FROM instructors WHERE id = $1', [id]);
@@ -214,7 +89,7 @@ app.get('/api/instructors', async (req, res) => {
   });
 
 // Generic Image Upload API
-app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) => {
+app.post('/api/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image file provided.' });
   }
@@ -246,7 +121,7 @@ app.get('/api/content/:section_id', async (req, res) => {
     }
   });
 
-  app.put('/api/content/:section_id', requireAuth, async (req, res) => {
+  app.put('/api/content/:section_id', async (req, res) => {
     const { section_id } = req.params;
     const { content_type, content_value } = req.body;
 

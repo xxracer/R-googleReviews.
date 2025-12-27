@@ -3,7 +3,7 @@
 .google-reviews-button {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px;
   z-index: 999;
   background: none;
   border: none;
@@ -28,7 +28,7 @@
 @media (max-width: 768px) {
   .google-reviews-button {
     bottom: 15px;
-    right: 15px;
+    left: 15px;
   }
   .google-reviews-button img {
     width: 120px; /* Smaller on mobile */
