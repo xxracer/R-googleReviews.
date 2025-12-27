@@ -6,11 +6,9 @@ const bcrypt = require('bcrypt');
 
 const migrateInstructorsData = async () => {
   try {
-    const { rows } = await query('SELECT COUNT(*) FROM instructors');
-    if (parseInt(rows[0].count, 10) > 0) {
-      console.log('Instructors data already migrated. Skipping.');
-      return;
-    }
+    // Always clear existing instructors to ensure data is fresh from the JSON file.
+    await query('DELETE FROM instructors');
+    console.log('Cleared existing instructors data.');
 
     const filePath = path.join(__dirname, 'instructors.json');
     if (!fs.existsSync(filePath)) {

@@ -4,7 +4,7 @@ import './ProgramHero.css';
 
 const ProgramHero = ({ title, sectionId, defaultImage }) => {
   const [heroImageUrl, setHeroImageUrl] = useState(defaultImage);
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchHeroImage = async () => {

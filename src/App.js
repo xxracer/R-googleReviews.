@@ -30,6 +30,7 @@ import ManageAbout from './pages/admin/ManageAbout';
 import UpdateInstructors from './pages/admin/UpdateInstructors';
 import ChangePasswordPage from './pages/admin/ChangePasswordPage';
 import PrivateRoute from './components/PrivateRoute';
+import LoginPage from './pages/LoginPage';
 
 import GoogleReviewsButton from './components/GoogleReviewsButton';
 
@@ -57,24 +58,25 @@ const AppLayout = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
 
-          {/* Protected Admin Routes - Now publicly accessible */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected Admin Routes */}
           <Route
             path="/admin/*"
             element={
               <PrivateRoute>
-                <Routes>
-                  <Route path="/" element={<AdminDashboard />}>
-                    <Route index element={<ManageHomepage />} />
-                    <Route path="homepage" element={<ManageHomepage />} />
-                    <Route path="programs" element={<ManagePrograms />} />
-                    <Route path="about" element={<ManageAbout />} />
-                    <Route path="instructors" element={<UpdateInstructors />} />
-                    <Route path="security" element={<ChangePasswordPage />} />
-                  </Route>
-                </Routes>
+                <AdminDashboard />
               </PrivateRoute>
             }
-          />
+          >
+            {/* These routes are rendered inside AdminDashboard's Outlet */}
+            <Route index element={<ManageHomepage />} />
+            <Route path="homepage" element={<ManageHomepage />} />
+            <Route path="programs" element={<ManagePrograms />} />
+            <Route path="about" element={<ManageAbout />} />
+            <Route path="instructors" element={<UpdateInstructors />} />
+            <Route path="security" element={<ChangePasswordPage />} />
+          </Route>
         </Routes>
       </main>
       <Footer />

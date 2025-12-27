@@ -10,7 +10,7 @@ const VideoEditor = ({ sectionId, title }) => {
   const [statusMessage, setStatusMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchCurrentVideo = async () => {

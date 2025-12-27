@@ -25,7 +25,6 @@ const ImageLibrary = ({ onSelect, onClose }) => {
 
   const handleImageSelect = (imageUrl) => {
     onSelect(imageUrl);
-    onClose();
   };
 
   return (

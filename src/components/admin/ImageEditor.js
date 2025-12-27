@@ -15,7 +15,7 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
   const [statusMessage, setStatusMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchCurrentImage = async () => {
@@ -109,6 +109,7 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
     setSelectedFile(null); // Clear any selected file
     setStatusMessage('Image selected from library. Click "Save Changes" to apply.');
     setMessageType('info');
+    setIsLibraryOpen(false); // Close the modal
   };
 
   return (

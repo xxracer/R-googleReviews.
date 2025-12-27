@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import './UpdateInstructors.css';
 
 const API_URL = '/api/instructors';
@@ -49,11 +47,6 @@ const UpdateInstructors = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  const handleEditorChange = (event, editor) => {
-    const data = editor.getData();
-    setFormData({ ...formData, bio: data });
   };
 
   const handleSubmit = (e) => {
@@ -110,11 +103,13 @@ const UpdateInstructors = () => {
             onChange={handleInputChange}
             required
           />
-          <CKEditor
-            editor={ClassicEditor}
-            data={formData.bio}
-            onChange={handleEditorChange}
-          />
+          <textarea
+            name="bio"
+            placeholder="Instructor Bio"
+            value={formData.bio}
+            onChange={handleInputChange}
+            rows="10"
+          ></textarea>
           <div className="image-upload-container">
             <label htmlFor="image-upload">Instructor Image:</label>
             <input

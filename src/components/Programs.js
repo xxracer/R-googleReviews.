@@ -14,7 +14,7 @@ const initialProgramsData = [
 
 const Programs = () => {
   const [programsData, setProgramsData] = useState(initialProgramsData);
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchProgramImages = async () => {

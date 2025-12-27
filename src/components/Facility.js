@@ -10,7 +10,7 @@ const initialFacilityImages = [
 const Facility = () => {
   const [facilityImages, setFacilityImages] = useState(initialFacilityImages);
   const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/0zh97sdP8-k');
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchFacilityContent = async () => {
