@@ -1,4 +1,5 @@
 
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,7 +9,6 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const PGStore = require('connect-pg-simple')(session);
 const { pool } = require('./db');
-require('dotenv').config();
 
 const app = express();
 
@@ -51,81 +51,100 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// --- Auth Middleware ---
+// --- Authentication Middleware ---
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.userId) {
     return next();
+  } else {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
-  res.status(401).json({ success: false, message: 'Unauthorized' });
 };
 
 // --- API Routes ---
 
 // Auth Routes
 app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-      const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-      if (rows.length === 0) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-      const user = rows[0];
-      const match = await bcrypt.compare(password, user.password_hash);
-      if (match) {
-        req.session.userId = user.id;
-        res.json({ success: true });
-      } else {
-        res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      res.status(500).json({ success: false, message: 'An error occurred during login.' });
+  const { username, password } = req.body;
+  try {
+    const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }
-  });
-
-  app.post('/api/logout', (req, res) => {
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).json({ success: false, message: 'Could not log out.' });
-      }
-      res.clearCookie('connect.sid');
-      res.json({ success: true });
-    });
-  });
-
-  app.get('/api/check-auth', (req, res) => {
-    if (req.session && req.session.userId) {
-      res.json({ isAuthenticated: true });
+    const user = rows[0];
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (match) {
+      req.session.userId = user.id;
+      res.json({ success: true, message: 'Logged in successfully.' });
     } else {
-      res.json({ isAuthenticated: false });
+      res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Failed to log out.' });
+    }
+    res.clearCookie('connect.sid'); // The default session cookie name
+    res.json({ success: true, message: 'Logged out successfully.' });
   });
+});
 
-  app.post('/api/change-password', requireAuth, async (req, res) => {
-      const { securityAnswer, newPassword } = req.body;
-      const userId = req.session.userId;
+app.get('/api/check-auth', (req, res) => {
+  if (req.session && req.session.userId) {
+    res.json({ isAuthenticated: true });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
+});
 
-      try {
-        const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+app.post('/api/reset-password-request', async (req, res) => {
+    const { username, securityAnswer } = req.body;
+    try {
+        const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
         if (rows.length === 0) {
-          return res.status(404).json({ success: false, message: 'User not found.' });
+            return res.status(404).json({ success: false, message: 'User not found.' });
         }
         const user = rows[0];
-
         const match = await bcrypt.compare(securityAnswer, user.security_answer_hash);
-        if (!match) {
-          return res.status(401).json({ success: false, message: 'Incorrect answer to security question.' });
+        if (match) {
+            // In a real app, generate a unique, single-use token
+            req.session.resetToken = `${user.id}-${Date.now()}`;
+            res.json({ success: true, resetToken: req.session.resetToken });
+        } else {
+            res.status(401).json({ success: false, message: 'Incorrect security answer.' });
         }
+    } catch (err) {
+        console.error('Password reset request error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
 
+app.post('/api/reset-password-confirm', async (req, res) => {
+    const { username, newPassword, resetToken } = req.body;
+
+    // Basic validation
+    if (req.session.resetToken !== resetToken) {
+        return res.status(401).json({ success: false, message: 'Invalid or expired reset token.' });
+    }
+
+    try {
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
-        await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, userId]);
+        await db.query('UPDATE users SET password_hash = $1 WHERE username = $2', [newPasswordHash, username]);
 
-        res.json({ success: true, message: 'Password updated successfully.' });
-      } catch (err) {
-        console.error('Error changing password:', err);
-        res.status(500).json({ success: false, message: 'An error occurred.' });
-      }
-    });
+        // Invalidate the token after use
+        delete req.session.resetToken;
+
+        res.json({ success: true, message: 'Password has been reset successfully.' });
+    } catch (err) {
+        console.error('Password reset confirmation error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
 
 // Instructors API (Read is public, Write is protected)
 app.get('/api/instructors', async (req, res) => {
@@ -184,7 +203,18 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-// Generic Image Upload API
+// Image Library API (Read is public)
+app.get('/api/images', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM image_library ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching images from DB:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch images.' });
+  }
+});
+
+// Generic Image Upload API (Protected)
 app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image file provided.' });
@@ -195,6 +225,15 @@ app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) =>
       token: process.env.BLOB_READ_WRITE_TOKEN,
       allowOverwrite: true,
     });
+
+    // Save the image URL to the library
+    try {
+      await db.query('INSERT INTO image_library (image_url) VALUES ($1) ON CONFLICT (image_url) DO NOTHING', [blob.url]);
+    } catch (dbErr) {
+      console.error('Error saving image to library:', dbErr);
+      // Non-critical error, so we don't send a failure response to the client
+    }
+
     res.status(200).json({ success: true, url: blob.url });
   } catch (err) {
     console.error('Error uploading image to Vercel Blob:', err);
@@ -202,7 +241,7 @@ app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) =>
   }
 });
 
-// Page Content API
+// Page Content API (Read is public, Write is protected)
 app.get('/api/content/:section_id', async (req, res) => {
     const { section_id } = req.params;
     try {

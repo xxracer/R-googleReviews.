@@ -7,7 +7,7 @@ const HeroSection = ({ videoOpacity }) => {
   const [heroImage, setHeroImage] = useState({ url: null, position: 'center', coords: { x: 0, y: 0 } });
   const [heroVideoUrl, setHeroVideoUrl] = useState('/videos/reign.mp4');
   const [isLoading, setIsLoading] = useState(true);
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchHeroContent = async () => {

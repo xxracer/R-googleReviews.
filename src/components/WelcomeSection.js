@@ -4,7 +4,7 @@ import './WelcomeSection.css';
 
 const WelcomeSection = () => {
   const [imageUrl, setImageUrl] = useState('https://static.wixstatic.com/media/c5947c_bf5a3cd828194df2944c8bb4eaf4cae0~mv2.jpg');
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+  const apiBaseUrl = ''; // All API calls will be proxied
 
   useEffect(() => {
     const fetchImage = async () => {

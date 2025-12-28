@@ -6,11 +6,9 @@ const bcrypt = require('bcrypt');
 
 const migrateInstructorsData = async () => {
   try {
-    const { rows } = await query('SELECT COUNT(*) FROM instructors');
-    if (parseInt(rows[0].count, 10) > 0) {
-      console.log('Instructors data already migrated. Skipping.');
-      return;
-    }
+    // Always clear existing instructors to ensure data is fresh from the JSON file.
+    await query('DELETE FROM instructors');
+    console.log('Cleared existing instructors data.');
 
     const filePath = path.join(__dirname, 'instructors.json');
     if (!fs.existsSync(filePath)) {
@@ -105,10 +103,34 @@ const createUsersTable = async () => {
     }
   };
 
+const createImageLibraryTable = async () => {
+  const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS image_library (
+      id SERIAL PRIMARY KEY,
+      image_url TEXT NOT NULL UNIQUE
+    );
+  `;
+  try {
+    await query(createTableQuery);
+    console.log('Table "image_library" created or already exists.');
+
+    // Seed the library with one initial image if it's empty
+    const { rows } = await query('SELECT COUNT(*) FROM image_library');
+    if (parseInt(rows[0].count, 10) === 0) {
+      const sampleImageUrl = 'https://i.imgur.com/8nLFCVP.png'; // An existing instructor image
+      await query('INSERT INTO image_library (image_url) VALUES ($1)', [sampleImageUrl]);
+      console.log('Image library seeded with initial image.');
+    }
+  } catch (err) {
+    console.error('Error creating or seeding image_library table:', err);
+  }
+};
+
 const initializeDatabase = async () => {
   await createInstructorsTable();
   await createPageContentTable();
   await createUsersTable();
+  await createImageLibraryTable();
 };
 
 module.exports = { initializeDatabase };
