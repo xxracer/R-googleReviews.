@@ -2,21 +2,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Draggable from 'react-draggable';
-import ImageLibrary from './ImageLibrary'; // Import the new component
+import ImageLibrary from './ImageLibrary';
 import './ImageEditor.css';
 
 const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false); // State for modal
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [objectPosition, setObjectPosition] = useState('center');
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
-  const apiBaseUrl = ''; // All API calls will be proxied
+  const apiBaseUrl = '';
 
+  // Fetch current image on mount
   useEffect(() => {
     const fetchCurrentImage = async () => {
       try {
@@ -24,12 +27,9 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
         if (response.data && response.data.content_value) {
           const content = JSON.parse(response.data.content_value);
           setCurrentImageUrl(content.url);
-          if (content.position) {
-            setObjectPosition(content.position);
-          }
-          if (content.coords) {
-            setPosition(content.coords);
-          }
+          setObjectPosition(content.position || 'center');
+          setPosition(content.coords || { x: 0, y: 0 });
+          setScale(content.scale || 1);
         }
       } catch (error) {
         if (error.response && error.response.status !== 404) {
@@ -42,18 +42,36 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
     fetchCurrentImage();
   }, [sectionId, apiBaseUrl]);
 
+  // Cleanup blob URL on unmount or when it changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-    setStatusMessage('');
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    const newPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(newPreviewUrl); // This will trigger the cleanup for the old URL
+    setStatusMessage('Image preview updated. Click "Save Changes" to apply.');
+    setMessageType('info');
   };
 
   const handlePositionChange = (event) => {
     setObjectPosition(event.target.value);
   };
 
+  const handleScaleChange = (event) => {
+    setScale(parseFloat(event.target.value));
+  };
+
   const handleDrag = (e, ui) => {
-    const { x, y } = position;
-    setPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+    setPosition({ x: position.x + ui.deltaX, y: position.y + ui.deltaY });
   };
 
   const handleSave = async () => {
@@ -72,18 +90,23 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
         imageUrl = uploadResponse.data.url;
       }
 
-      if (!imageUrl) {
-        setStatusMessage('Please select an image file first.');
+      // If after all that, there's still no image, then we can't save.
+      if (!imageUrl && !previewUrl) {
+        setStatusMessage('Please select an image to save.');
         setMessageType('error');
         setIsLoading(false);
         return;
       }
 
+      // Use the preview URL if there is one and it hasn't been uploaded yet
+      const finalImageUrl = selectedFile ? imageUrl : currentImageUrl;
+
       setStatusMessage('Saving content...');
       const contentToSave = {
-        url: imageUrl,
+        url: finalImageUrl,
         position: objectPosition,
         coords: position,
+        scale: scale,
       };
 
       await axios.put(`${apiBaseUrl}/api/content/${sectionId}`, {
@@ -91,10 +114,11 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
         content_value: JSON.stringify(contentToSave),
       });
 
-      setCurrentImageUrl(imageUrl);
+      setCurrentImageUrl(finalImageUrl);
       setStatusMessage('Image updated successfully!');
       setMessageType('success');
       setSelectedFile(null);
+      setPreviewUrl(null); // Clear preview after successful save
     } catch (error) {
       console.error('Failed to update image:', error);
       setStatusMessage('An error occurred. Please try again.');
@@ -106,11 +130,14 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
 
   const handleSelectFromLibrary = (imageUrl) => {
     setCurrentImageUrl(imageUrl);
-    setSelectedFile(null); // Clear any selected file
+    setSelectedFile(null);
+    setPreviewUrl(null); // Clear local file preview
     setStatusMessage('Image selected from library. Click "Save Changes" to apply.');
     setMessageType('info');
-    setIsLibraryOpen(false); // Close the modal
+    setIsLibraryOpen(false);
   };
+
+  const displayUrl = previewUrl || currentImageUrl;
 
   return (
     <div className="image-editor">
@@ -122,10 +149,18 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
       )}
       <h3>{title}</h3>
       <div className="image-preview draggable-container">
-        <p>Current Image (Drag to reposition):</p>
-        {currentImageUrl ? (
+        <p>Preview (Drag to reposition):</p>
+        {displayUrl ? (
           <Draggable onDrag={handleDrag} defaultPosition={position}>
-            <img src={currentImageUrl} alt={title} style={{ objectPosition: objectPosition }} />
+            <img
+              src={displayUrl}
+              alt="Preview"
+              style={{
+                objectPosition: objectPosition,
+                transform: `scale(${scale})`,
+                transition: 'transform 0.1s ease-out'
+              }}
+            />
           </Draggable>
         ) : (
           <div className="no-image-placeholder">No Image Selected</div>
@@ -143,6 +178,20 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
             <option value="right">Right</option>
           </select>
         )}
+      </div>
+      <div className="zoom-control">
+          <label htmlFor={`zoom-${sectionId}`}>Zoom:</label>
+          <input
+            type="range"
+            id={`zoom-${sectionId}`}
+            min="0.5"
+            max="3"
+            step="0.05"
+            value={scale}
+            onChange={handleScaleChange}
+          />
+        </div>
+      <div className="save-container">
         <button className="btn" onClick={handleSave} disabled={isLoading}>
           {isLoading ? 'Saving...' : 'Save Changes'}
         </button>
