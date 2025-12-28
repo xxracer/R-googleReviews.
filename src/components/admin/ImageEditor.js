@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Draggable from 'react-draggable';
 import ImageLibrary from './ImageLibrary';
@@ -137,6 +137,7 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
     setIsLibraryOpen(false);
   };
 
+  const nodeRef = useRef(null);
   const displayUrl = previewUrl || currentImageUrl;
 
   return (
@@ -151,16 +152,18 @@ const ImageEditor = ({ sectionId, title, showPositionControl = false }) => {
       <div className="image-preview draggable-container">
         <p>Preview (Drag to reposition):</p>
         {displayUrl ? (
-          <Draggable onDrag={handleDrag} defaultPosition={position}>
-            <img
-              src={displayUrl}
-              alt="Preview"
-              style={{
-                objectPosition: objectPosition,
-                transform: `scale(${scale})`,
-                transition: 'transform 0.1s ease-out'
-              }}
-            />
+          <Draggable nodeRef={nodeRef} onDrag={handleDrag} defaultPosition={position}>
+            <div ref={nodeRef} style={{ cursor: 'move', display: 'inline-block' }}>
+              <img
+                src={displayUrl}
+                alt="Preview"
+                style={{
+                  objectPosition: objectPosition,
+                  transform: `scale(${scale})`,
+                  transition: 'transform 0.1s ease-out'
+                }}
+              />
+            </div>
           </Draggable>
         ) : (
           <div className="no-image-placeholder">No Image Selected</div>

@@ -10,7 +10,7 @@
 [1] > reign-bjj2@0.1.0 server
 [1] > node backend/server.js
 [1]
-[1] [dotenv@17.2.3] injecting env (3) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[1] [dotenv@17.2.3] injecting env (3) from .env -- tip: ⚙️  override existing env vars with { override: true }
 [1] Server is running for local development on http://localhost:3001
 [1] Failed to connect to the database: AggregateError [ECONNREFUSED]:
 [1]     at /app/node_modules/pg-pool/index.js:45:11
@@ -67,9 +67,9 @@
 [1]   ]
 [1] }
 [0] [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
-[0] (node:9347) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[0] (node:11142) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 [0] (Use `node --trace-deprecation ...` to show where the warning was created)
-[0] (node:9347) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[0] (node:11142) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 [0] Starting the development server...
 [0]
 [0] Compiled successfully!
@@ -83,397 +83,7 @@
 [0] To create a production build, use npm run build.
 [0]
 [0] webpack compiled successfully
-[0] (node:9347) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async /app/backend/server.js:252:24 {
-[1]   code: 'ECONNREFUSED',
-[1]   [errors]: [
-[1]     Error: connect ECONNREFUSED ::1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '::1',
-[1]       port: 5432
-[1]     },
-[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
-[1]         at createConnectionError (node:net:1678:14)
-[1]         at afterConnectMultiple (node:net:1708:16) {
-[1]       errno: -111,
-[1]       code: 'ECONNREFUSED',
-[1]       syscall: 'connect',
-[1]       address: '127.0.0.1',
-[1]       port: 5432
-[1]     }
-[1]   ]
-[1] }
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
-[1] AggregateError [ECONNREFUSED]:
-[1]     at /app/node_modules/pg-pool/index.js:45:11
-[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[0] (node:11142) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
 [1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
 [1]     at /app/node_modules/pg-pool/index.js:45:11
 [1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
@@ -788,6 +398,396 @@
 [1]     }
 [1]   ]
 [1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] Error fetching content from DB: AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async /app/backend/server.js:252:24 {
+[1]   code: 'ECONNREFUSED',
+[1]   [errors]: [
+[1]     Error: connect ECONNREFUSED ::1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '::1',
+[1]       port: 5432
+[1]     },
+[1]     Error: connect ECONNREFUSED 127.0.0.1:5432
+[1]         at createConnectionError (node:net:1678:14)
+[1]         at afterConnectMultiple (node:net:1708:16) {
+[1]       errno: -111,
+[1]       code: 'ECONNREFUSED',
+[1]       syscall: 'connect',
+[1]       address: '127.0.0.1',
+[1]       port: 5432
+[1]     }
+[1]   ]
+[1] }
+[1] AggregateError [ECONNREFUSED]:
+[1]     at /app/node_modules/pg-pool/index.js:45:11
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async PGStore._asyncQuery (/app/node_modules/connect-pg-simple/index.js:322:21)
 [1] AggregateError [ECONNREFUSED]:
 [1]     at /app/node_modules/pg-pool/index.js:45:11
 [1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
