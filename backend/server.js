@@ -3,25 +3,29 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
 const axios = require('axios');
-const bcrypt = require('bcrypt');
 const session = require('express-session');
 const PGStore = require('connect-pg-simple')(session);
-const { pool } = require('./db');
+const db = require('./db');
+const { pool, testConnection } = require('./db');
 
 const app = express();
 
 // --- Database Initialization ---
 const { initializeDatabase } = require('./db-init');
-const db = require('./db');
 const multer = require('multer');
 const { put } = require('@vercel/blob');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Test DB connection and initialize schema
 (async () => {
-  await initializeDatabase();
+  try {
+    await testConnection();
+    await initializeDatabase();
+  } catch (err) {
+    console.error("Failed during database initialization, server might be in a degraded state:", err);
+  }
 })();
 
 // --- Session Middleware ---
