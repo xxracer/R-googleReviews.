@@ -2,7 +2,6 @@
 const { query } = require('./db');
 const fs = require('fs');
 const path = require('path');
-const bcrypt = require('bcrypt');
 
 const migrateInstructorsData = async () => {
   try {
@@ -82,24 +81,30 @@ const createUsersTable = async () => {
       await query(createTableQuery);
       console.log('Table "users" created or already exists.');
 
-      const { rows } = await query('SELECT COUNT(*) FROM users');
-      if (parseInt(rows[0].count, 10) === 0) {
-        const username = 'moon';
-        const password = 'reingrules';
-        const securityQuestion = 'bjj';
-        const securityAnswer = 'bjj';
+      // Always ensure the 'moon' user exists and the password is correct.
+      const username = 'moon';
+      const password = 'reingrules';
+      const securityQuestion = 'bjj';
+      const securityAnswer = 'bjj';
 
-        const passwordHash = await bcrypt.hash(password, 10);
-        const securityAnswerHash = await bcrypt.hash(securityAnswer, 10);
+      const passwordHash = await bcrypt.hash(password, 10);
+      const securityAnswerHash = await bcrypt.hash(securityAnswer, 10);
 
-        await query(
-          'INSERT INTO users (username, password_hash, security_question, security_answer_hash) VALUES ($1, $2, $3, $4)',
-          [username, passwordHash, securityQuestion, securityAnswerHash]
-        );
-        console.log('Initial user "moon" migrated to database.');
-      }
+      const upsertUserQuery = `
+        INSERT INTO users (username, password_hash, security_question, security_answer_hash)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (username)
+        DO UPDATE SET
+          password_hash = $2,
+          security_question = $3,
+          security_answer_hash = $4;
+      `;
+
+      await query(upsertUserQuery, [username, passwordHash, securityQuestion, securityAnswerHash]);
+      console.log('Admin user "moon" is configured and password has been set.');
+
     } catch (err) {
-      console.error('Error creating users table:', err);
+      console.error('Error creating or upserting users table:', err);
     }
   };
 
