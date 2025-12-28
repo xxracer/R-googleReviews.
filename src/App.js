@@ -29,8 +29,6 @@ import ManagePrograms from './pages/admin/ManagePrograms';
 import ManageAbout from './pages/admin/ManageAbout';
 import UpdateInstructors from './pages/admin/UpdateInstructors';
 import ChangePasswordPage from './pages/admin/ChangePasswordPage';
-import PrivateRoute from './components/PrivateRoute';
-import LoginPage from './pages/LoginPage';
 
 import GoogleReviewsButton from './components/GoogleReviewsButton';
 
@@ -58,17 +56,9 @@ const AppLayout = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
 
-          <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Admin Routes */}
-          <Route
-            path="/admin/*"
-            element={
-              <PrivateRoute>
-                <AdminDashboard />
-              </PrivateRoute>
-            }
-          >
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={<AdminDashboard />}>
             {/* These routes are rendered inside AdminDashboard's Outlet */}
             <Route index element={<ManageHomepage />} />
             <Route path="homepage" element={<ManageHomepage />} />

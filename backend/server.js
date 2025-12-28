@@ -157,7 +157,7 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-  app.post('/api/instructors', requireAuth, async (req, res) => {
+  app.post('/api/instructors', async (req, res) => {
     const { name, bio, image } = req.body;
     try {
       const { rows } = await db.query(
@@ -171,7 +171,7 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-  app.put('/api/instructors/:id', requireAuth, async (req, res) => {
+  app.put('/api/instructors/:id', async (req, res) => {
     const { id } = req.params;
     const { name, bio, image } = req.body;
     try {
@@ -189,7 +189,7 @@ app.get('/api/instructors', async (req, res) => {
     }
   });
 
-  app.delete('/api/instructors/:id', requireAuth, async (req, res) => {
+  app.delete('/api/instructors/:id', async (req, res) => {
     const { id } = req.params;
     try {
       const { rowCount } = await db.query('DELETE FROM instructors WHERE id = $1', [id]);
@@ -215,7 +215,7 @@ app.get('/api/images', async (req, res) => {
 });
 
 // Generic Image Upload API (Protected)
-app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) => {
+app.post('/api/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image file provided.' });
   }
@@ -256,7 +256,7 @@ app.get('/api/content/:section_id', async (req, res) => {
     }
   });
 
-  app.put('/api/content/:section_id', requireAuth, async (req, res) => {
+  app.put('/api/content/:section_id', async (req, res) => {
     const { section_id } = req.params;
     const { content_type, content_value } = req.body;
 
