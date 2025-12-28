@@ -31,7 +31,6 @@ const placeholderReviews = [
 const Testimonials = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -49,7 +48,6 @@ const Testimonials = () => {
         console.error("Error fetching Google reviews, using placeholders.", err);
         // If there's an error, fall back to placeholder reviews.
         setReviews(placeholderReviews);
-        setError('Could not load reviews.'); // Optional: handle error display
       } finally {
         setLoading(false);
       }
